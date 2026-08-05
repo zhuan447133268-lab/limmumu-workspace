@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>正在打开…</title>
+<!--
+  s.html —— 短链路由，对应原仓库 server/routes/serve.js 的 GET /s/:shortId/*
+  服务端做不了重写，所以路径放在 hash 里：s.html#<shortId>[/<相对路径>]
+  职责与原来一致：
+    有效期拦截 → 入口文件跳转 → Markdown 渲染 → 目录索引
+  三段逻辑（pathKind / listEntries / 面包屑）从 server/utils/directoryIndex.js 原样移植。
+-->
+<style>
+  :root {
+    --bg: #fdf6e3; --card: #fffdf8; --border: #e8dcc8;
+    --text: #4a3f35; --muted: #8c7b6b; --link: #4a9d78;
+    --primary: #5aa87e; --primary-bg: #e8f5ee; --code-bg: #f5eeda;
+    --danger: #e87c6c; --danger-bg: #fdf0ee;
+    --font: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--font); font-weight: 500; line-height: 1.6;
+    padding: 32px 20px 64px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 800; margin: 0 0 6px; word-break: break-all; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .sub code { background: var(--code-bg); padding: 2px 7px; border-radius: 6px; }
+  .breadcrumb { font-size: 14px; margin-bottom: 18px; word-break: break-all; }
+  .crumb { color: var(--link); text-decoration: none; font-weight: 600; cursor: pointer; }
+  .crumb:hover { text-decoration: underline; }
+  .crumb.current { color: var(--text); font-weight: 700; cursor: default; }
+  .crumb.current:hover { text-decoration: none; }
+  .sep { color: var(--muted); margin: 0 6px; }
+  .entries { background: var(--card); border: 2px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .entry {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 18px; color: var(--text); text-decoration: none;
+    border-bottom: 1px solid var(--border); font-size: 15px;
+  }
+  .entry:last-child { border-bottom: none; }
+  .entry:hover { background: #fbf3df; }
+  .entry .icon { font-size: 18px; flex-shrink: 0; }
+  .entry .ext {
+    flex-shrink: 0; font-size: 10px; font-weight: 800; letter-spacing: .04em;
+    color: #6e6152; background: #ece5d8; border-radius: 5px; padding: 2px 7px;
+    min-width: 40px; text-align: center;
+  }
+  .entry.dir .ext { display: none; }
+  .entry .name { flex: 1; word-break: break-all; }
+  .entry.file .name { color: var(--link); font-weight: 600; }
+  .entry .meta { flex-shrink: 0; color: var(--muted); font-size: 12px; }
+  .empty { color: var(--muted); padding: 40px; text-align: center; }
+
+  /* 状态页 */
+  .state { max-width: 480px; margin: 12vh auto 0; text-align: center; }
+  .state-emoji { font-size: 56px; display: block; margin-bottom: 14px; }
+  .state-title { font-size: 21px; font-weight: 800; margin-bottom: 10px; }
+  .state-desc { font-size: 14px; color: var(--muted); line-height: 1.8; }
+  .state-desc code { background: var(--code-bg); padding: 2px 7px; border-radius: 6px; word-break: break-all; }
+  .state.err .state-title { color: var(--danger); }
+  .btn-home {
+    display: inline-block; margin-top: 22px;
+    padding: 10px 26px; border-radius: 50px;
+    background: var(--primary); color: #fff;
+    font-weight: 800; font-size: 14px; text-decoration: none;
+    box-shadow: 0 4px 0 0 #4a9068;
+  }
+  .btn-home:active { transform: translateY(2px); box-shadow: 0 2px 0 0 #4a9068; }
+
+  /* Markdown 排版（移植自 server/utils/markdown.js） */
+  .md-body {
+    max-width: 820px; margin: 0 auto; background: var(--card);
+    border: 2px solid var(--border); border-radius: 24px;
+    padding: 48px 56px; line-height: 1.75; letter-spacing: 0.01em;
+  }
+  .md-body h1, .md-body h2, .md-body h3, .md-body h4 { font-weight: 800; line-height: 1.3; margin: 1.6em 0 0.6em; }
+  .md-body h1 { font-size: 30px; font-weight: 900; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
+  .md-body h2 { font-size: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+  .md-body h3 { font-size: 19px; }
+  .md-body h1:first-child, .md-body h2:first-child { margin-top: 0; }
+  .md-body p { margin: 0.9em 0; }
+  .md-body a { color: var(--link); font-weight: 700; text-decoration: none; border-bottom: 2px solid var(--primary-bg); }
+  .md-body a:hover { border-bottom-color: var(--primary); }
+  .md-body ul, .md-body ol { padding-left: 1.6em; margin: 0.9em 0; }
+  .md-body li { margin: 0.35em 0; }
+  .md-body blockquote {
+    margin: 1.2em 0; padding: 12px 20px; background: var(--primary-bg);
+    border-left: 4px solid var(--primary); border-radius: 0 12px 12px 0; color: var(--muted);
+  }
+  .md-body blockquote p { margin: 0.3em 0; }
+  .md-body code {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+    font-size: 0.88em; background: var(--code-bg); padding: 2px 7px; border-radius: 6px; color: #b3541e;
+  }
+  .md-body pre {
+    background: #3d3428; color: #f5eeda; padding: 18px 22px;
+    border-radius: 16px; overflow-x: auto; margin: 1.2em 0; line-height: 1.6;
+  }
+  .md-body pre code { background: none; color: inherit; padding: 0; font-size: 13.5px; }
+  .md-body table { border-collapse: collapse; width: 100%; margin: 1.2em 0; font-size: 14.5px; }
+  .md-body th, .md-body td { border: 2px solid var(--border); padding: 9px 14px; text-align: left; }
+  .md-body th { background: var(--code-bg); font-weight: 800; }
+  .md-body tr:nth-child(even) td { background: #fbf7ec; }
+  .md-body img { max-width: 100%; border-radius: 12px; border: 2px solid var(--border); }
+  .md-body hr { border: none; border-top: 2px solid var(--border); margin: 2em 0; }
+  .md-body input[type="checkbox"] { accent-color: var(--primary); margin-right: 6px; }
+  .md-back { max-width: 820px; margin: 0 auto 14px; font-size: 13px; }
+  .md-back a { color: var(--link); font-weight: 700; text-decoration: none; }
+  @media (max-width: 640px) {
+    body { padding: 20px 14px 48px; }
+    .md-body { padding: 28px 22px; border-radius: 18px; }
+  }
+</style>
+</head>
+<body>
+<div id="root">
+  <div class="state"><span class="state-emoji">⛵</span><div class="state-title">正在打开…</div></div>
+</div>
+
+<script src="js/markdown.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  var root = document.getElementById('root');
+  var BASE = location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '');
+  var metaCache = null;
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function encodePath(p) { return String(p).split('/').map(encodeURIComponent).join('/'); }
+  function fileUrl(p, rel) { return BASE + 'f/' + encodeURIComponent(p.storageId) + '/' + encodePath(rel); }
+
+  function state(emoji, title, descHtml, isErr) {
+    document.title = title;
+    root.innerHTML = '<div class="state' + (isErr ? ' err' : '') + '">' +
+      '<span class="state-emoji">' + emoji + '</span>' +
+      '<div class="state-title">' + esc(title) + '</div>' +
+      (descHtml ? '<div class="state-desc">' + descHtml + '</div>' : '') +
+      '<a class="btn-home" href="' + BASE + 'index.html">回到首页</a>' +
+      '</div>';
+  }
+
+  /* ---------- 解析 hash：#<shortId>[/<相对路径>] ---------- */
+  function parseHash() {
+    var raw = location.hash.replace(/^#/, '');
+    if (!raw) {
+      var q = new URLSearchParams(location.search).get('id');
+      raw = q || '';
+    }
+    raw = raw.replace(/^\/+/, '');
+    if (!raw) return null;
+    var slash = raw.indexOf('/');
+    if (slash < 0) return { id: decodeURIComponent(raw), path: '' };
+    return {
+      id: decodeURIComponent(raw.slice(0, slash)),
+      path: raw.slice(slash + 1).split('/').map(decodeURIComponent).join('/').replace(/^\/+|\/+$/g, '')
+    };
+  }
+
+  /* ---------- 移植自 server/utils/directoryIndex.js ---------- */
+  function pathKind(paths, p) {
+    if (p === '') return paths.length ? 'dir' : 'none';
+    var prefix = p + '/';
+    for (var i = 0; i < paths.length; i++) {
+      if (paths[i] === p) return 'file';
+      if (paths[i].indexOf(prefix) === 0) return 'dir';
+    }
+    return 'none';
+  }
+  function listEntries(files, dirPath) {
+    var prefix = dirPath ? dirPath + '/' : '';
+    var dirs = {}, fileList = [];
+    files.forEach(function (f) {
+      var rel = f.p;
+      if (dirPath && rel.indexOf(prefix) !== 0) return;
+      var rest = dirPath ? rel.slice(prefix.length) : rel;
+      if (!rest) return;
+      var slash = rest.indexOf('/');
+      if (slash === -1) fileList.push({ name: rest, path: rel, size: f.s });
+      else dirs[rest.slice(0, slash)] = true;
+    });
+    return {
+      dirs: Object.keys(dirs).sort(function (a, b) { return a.localeCompare(b, 'zh'); }),
+      files: fileList.sort(function (a, b) { return a.name.localeCompare(b.name, 'zh'); })
+    };
+  }
+  var EXT_LABEL = {
+    html: 'HTML', htm: 'HTML', md: 'MD', txt: 'TXT', csv: 'CSV',
+    json: 'JSON', xml: 'XML', svg: 'SVG', css: 'CSS', js: 'JS', mjs: 'JS',
+    map: 'MAP', wasm: 'WASM', woff: 'FONT', woff2: 'FONT', ttf: 'FONT', otf: 'FONT', eot: 'FONT',
+    png: 'IMG', jpg: 'IMG', jpeg: 'IMG', gif: 'IMG', webp: 'IMG', ico: 'IMG', avif: 'IMG'
+  };
+  function extOf(name) { var i = name.lastIndexOf('.'); return i >= 0 ? name.slice(i + 1).toLowerCase() : ''; }
+  function fmtSize(n) {
+    if (!n) return '-';
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1048576).toFixed(2) + ' MB';
+  }
+  /** 项目内跳转统一走 hash，避免相对路径解析出岔子 */
+  function hashHref(p, rel) { return '#' + encodeURIComponent(p.shortId) + (rel ? '/' + encodePath(rel) : ''); }
+
+  function renderDirIndex(p, dirPath) {
+    var entries = listEntries(p.files || [], dirPath);
+    document.title = p.name + ' - 目录';
+
+    var segs = dirPath ? dirPath.split('/') : [];
+    var crumbs = ['<a class="crumb" href="' + hashHref(p, '') + '">根目录</a>'];
+    var acc = '';
+    segs.forEach(function (seg, i) {
+      acc = acc ? acc + '/' + seg : seg;
+      crumbs.push('<span class="sep">/</span>');
+      crumbs.push(i === segs.length - 1
+        ? '<span class="crumb current">' + esc(seg) + '</span>'
+        : '<a class="crumb" href="' + hashHref(p, acc) + '">' + esc(seg) + '</a>');
+    });
+
+    var dirRows = entries.dirs.map(function (d) {
+      return '<a class="entry dir" href="' + hashHref(p, dirPath ? dirPath + '/' + d : d) + '">' +
+        '<span class="icon">📁</span><span class="name">' + esc(d) + '</span><span class="meta">目录</span></a>';
+    }).join('');
+
+    var fileRows = entries.files.map(function (f) {
+      return '<a class="entry file" href="' + hashHref(p, f.path) + '">' +
+        '<span class="icon">📄</span><span class="ext">' + (EXT_LABEL[extOf(f.name)] || 'FILE') + '</span>' +
+        '<span class="name">' + esc(f.name) + '</span>' +
+        '<span class="meta">' + fmtSize(f.size) + '</span></a>';
+    }).join('');
+
+    root.innerHTML = '<div class="wrap">' +
+      '<h1>' + esc(p.name) + '</h1>' +
+      '<div class="sub">分享 ID：<code>' + esc(p.shortId) + '</code>' +
+      (p.version > 1 ? ' · v' + p.version : '') + ' · ' + p.fileCount + ' 个文件</div>' +
+      '<nav class="breadcrumb">' + crumbs.join('') + '</nav>' +
+      '<div class="entries">' + (dirRows + fileRows || '<div class="empty">该目录为空</div>') + '</div>' +
+      '</div>';
+  }
+
+  /* ---------- Markdown ---------- */
+  async function renderMarkdown(p, relPath) {
+    var url = fileUrl(p, relPath);
+    var res = await fetch(url, { cache: 'no-cache' });
+    if (!res.ok) throw new Error('读取 ' + relPath + ' 失败（' + res.status + '）');
+    var text = await res.text();
+
+    document.title = relPath.split('/').pop().replace(/\.md$/i, '') || p.name;
+    var html = window.HBMarkdown ? HBMarkdown.render(text) : '<pre>' + esc(text) + '</pre>';
+
+    var backHtml = (p.files || []).length > 1
+      ? '<div class="md-back"><a href="' + hashHref(p, relPath.indexOf('/') >= 0 ? relPath.replace(/\/[^/]*$/, '') : '') + '">← 返回目录</a></div>'
+      : '';
+    root.innerHTML = backHtml + '<article class="md-body">' + html + '</article>';
+
+    // 相对路径重写：md 里的 ./img.png 要指到 f/<storageId>/<所在目录>/img.png
+    var dir = relPath.indexOf('/') >= 0 ? relPath.replace(/\/[^/]*$/, '') : '';
+    function resolve(href) {
+      if (/^[a-z][a-z0-9+.-]*:/i.test(href) || href.charAt(0) === '#' || href.charAt(0) === '/') return null;
+      var parts = (dir ? dir.split('/') : []);
+      href.split('/').forEach(function (seg) {
+        if (seg === '' || seg === '.') return;
+        if (seg === '..') parts.pop();
+        else parts.push(seg);
+      });
+      return parts.join('/');
+    }
+    root.querySelectorAll('.md-body img[src]').forEach(function (img) {
+      var r = resolve(img.getAttribute('src'));
+      if (r) img.src = fileUrl(p, r);
+    });
+    root.querySelectorAll('.md-body a[href]').forEach(function (a) {
+      var raw = a.getAttribute('href');
+      var r = resolve(raw);
+      if (!r) { if (/^https?:/i.test(raw)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; } return; }
+      // 项目内的文件一律走 hash 路由，md/html 才能被正确渲染或跳转
+      a.setAttribute('href', hashHref(p, r));
+    });
+  }
+
+  /* ---------- 主流程 ---------- */
+  async function loadMeta() {
+    if (metaCache) return metaCache;
+    // GitHub Pages 有 10 分钟 CDN 缓存，加时间戳保证新上传的链接立刻能用
+    var res = await fetch(BASE + 'data/projects.json?_=' + Date.now(), { cache: 'no-store' });
+    if (res.status === 404) return (metaCache = { projects: [], dirs: [] });
+    if (!res.ok) throw new Error('读取索引失败（HTTP ' + res.status + '）');
+    metaCache = await res.json();
+    if (!metaCache.projects) metaCache.projects = [];
+    return metaCache;
+  }
+
+  async function route() {
+    var q = parseHash();
+    if (!q || !q.id) {
+      state('🧭', '缺少分享 ID',
+        '正确的地址长这样：<br><code>' + esc(BASE) + 's.html#abc12345</code>');
+      return;
+    }
+
+    var meta;
+    try { meta = await loadMeta(); }
+    catch (err) { state('📡', '索引加载失败', esc(err.message), true); return; }
+
+    var p = meta.projects.filter(function (x) { return x.shortId === q.id; })[0];
+    if (!p) {
+      state('🔍', '内容不存在', '分享 ID <code>' + esc(q.id) + '</code> 没有找到。<br>可能已被删除，或链接抄错了。', true);
+      return;
+    }
+    if (!p.storageId) p.storageId = (p.storages && p.storages[p.storages.length - 1]) || p.shortId;
+    if (!p.files) p.files = [];
+
+    if (p.expiresAt && new Date(p.expiresAt) <= new Date()) {
+      state('⏳', '链接已过期',
+        '「' + esc(p.name) + '」的有效期设置到 ' + esc(new Date(p.expiresAt).toLocaleString('zh-CN')) + '。<br>需要继续访问请让分享者延长有效期。', true);
+      return;
+    }
+
+    var paths = p.files.map(function (f) { return f.p; });
+    var target = q.path;
+
+    // 没指定子路径 → 用入口文件
+    if (!target) {
+      if (p.entryFile) target = p.entryFile;
+      else { renderDirIndex(p, ''); return; }
+    }
+
+    var kind = pathKind(paths, target);
+    if (kind === 'none') {
+      state('🔍', '文件不存在', '<code>' + esc(target) + '</code> 不在这个项目里。', true);
+      return;
+    }
+    if (kind === 'dir') { renderDirIndex(p, target); return; }
+
+    // 文件：md 就地渲染，其余交给浏览器（html 直接跳过去，相对资源才不会断）
+    if (/\.md$/i.test(target)) {
+      try { await renderMarkdown(p, target); }
+      catch (err) { state('📄', 'Markdown 渲染失败', esc(err.message), true); }
+      return;
+    }
+    location.replace(fileUrl(p, target));
+  }
+
+  window.addEventListener('hashchange', function () { route(); });
+  route();
+})();
+</script>
+</body>
+</html>

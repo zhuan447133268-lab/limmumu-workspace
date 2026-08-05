@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>页面不存在</title>
+<!--
+  GitHub Pages 对未知路径会返回这个页面。借它支持一种更好看的短链写法：
+    /s/<shortId>  →  /s.html#<shortId>
+  注意：这条路径 HTTP 状态码是 404，个别 App 内置浏览器（比如微信）可能直接弹自己的错误页，
+  所以工具里默认复制的仍然是 s.html#<id> 那种一定能用的地址，这里只是锦上添花。
+-->
+<style>
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: #fdf6e3; color: #4a3f35; text-align: center; padding: 24px;
+    font-family: system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  }
+  .emoji { font-size: 56px; display: block; margin-bottom: 14px; }
+  h1 { font-size: 21px; font-weight: 800; margin: 0 0 10px; }
+  p { font-size: 14px; color: #8c7b6b; line-height: 1.8; margin: 0; }
+  a { display: inline-block; margin-top: 22px; padding: 10px 26px; border-radius: 50px;
+      background: #5aa87e; color: #fff; font-weight: 800; font-size: 14px; text-decoration: none;
+      box-shadow: 0 4px 0 0 #4a9068; }
+</style>
+</head>
+<body>
+<div id="box">
+  <span class="emoji">🍃</span>
+  <h1>页面不存在</h1>
+  <p>地址可能拼错了，或者内容已经被删除。</p>
+  <a id="home" href="/">回到首页</a>
+</div>
+<script>
+(function () {
+  var parts = location.pathname.split('/').filter(Boolean);
+  var i = parts.lastIndexOf('s');
+  // /<可能的仓库名>/s/<shortId>[/<子路径>]
+  if (i >= 0 && parts.length > i + 1) {
+    var base = '/' + parts.slice(0, i).join('/');
+    if (base !== '/') base += '/';
+    location.replace(base + 's.html#' + parts.slice(i + 1).join('/') + location.search);
+    return;
+  }
+  var root = parts.length ? '/' + parts[0] + '/' : '/';
+  document.getElementById('home').setAttribute('href', root);
+})();
+</script>
+</body>
+</html>
