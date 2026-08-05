@@ -1,5 +1,34 @@
 {
   "version": 1,
   "dirs": [],
-  "projects": []
+  "projects": [
+    {
+      "id": "qPiPVhh7",
+      "shortId": "qPiPVhh7",
+      "dirId": null,
+      "name": "WorkBuddy打造个人工作台0805_静态版",
+      "entryFile": "WorkBuddy打造个人工作台0805_静态版.html",
+      "storageId": "qPiPVhh7",
+      "storages": [
+        "qPiPVhh7"
+      ],
+      "version": 1,
+      "totalSize": 1049150,
+      "fileCount": 1,
+      "files": [
+        {
+          "p": "WorkBuddy打造个人工作台0805_静态版.html",
+          "s": 1049150
+        }
+      ],
+      "tags": [],
+      "createdAt": "2026-08-05T09:34:22.162Z",
+      "updatedAt": "2026-08-05T09:34:22.162Z",
+      "expiresAt": null,
+      "review": {
+        "status": "passed",
+        "warnings": 0
+      }
+    }
+  ]
 }
