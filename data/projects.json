@@ -3,6 +3,34 @@
   "dirs": [],
   "projects": [
     {
+      "id": "kr7o1YlQ",
+      "shortId": "kr7o1YlQ",
+      "dirId": null,
+      "name": "index",
+      "entryFile": "index.html",
+      "storageId": "kr7o1YlQ",
+      "storages": [
+        "kr7o1YlQ"
+      ],
+      "version": 1,
+      "totalSize": 1792272,
+      "fileCount": 1,
+      "files": [
+        {
+          "p": "index.html",
+          "s": 1792272
+        }
+      ],
+      "tags": [],
+      "createdAt": "2026-08-05T09:38:30.674Z",
+      "updatedAt": "2026-08-05T09:38:30.674Z",
+      "expiresAt": null,
+      "review": {
+        "status": "passed",
+        "warnings": 0
+      }
+    },
+    {
       "id": "qPiPVhh7",
       "shortId": "qPiPVhh7",
       "dirId": null,
