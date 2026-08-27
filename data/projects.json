@@ -3,6 +3,34 @@
   "dirs": [],
   "projects": [
     {
+      "id": "B9QDd148",
+      "shortId": "B9QDd148",
+      "dirId": null,
+      "name": "谜境营地_自包含v2",
+      "entryFile": "谜境营地_自包含v2.html",
+      "storageId": "B9QDd148",
+      "storages": [
+        "B9QDd148"
+      ],
+      "version": 1,
+      "totalSize": 4280166,
+      "fileCount": 1,
+      "files": [
+        {
+          "p": "谜境营地_自包含v2.html",
+          "s": 4280166
+        }
+      ],
+      "tags": [],
+      "createdAt": "2026-08-27T09:35:23.583Z",
+      "updatedAt": "2026-08-27T09:35:23.583Z",
+      "expiresAt": null,
+      "review": {
+        "status": "passed",
+        "warnings": 0
+      }
+    },
+    {
       "id": "kr7o1YlQ",
       "shortId": "kr7o1YlQ",
       "dirId": null,
