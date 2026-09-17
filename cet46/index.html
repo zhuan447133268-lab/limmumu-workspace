@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四六级冲关 · 学生端</title>
+<style>
+/* ============ 基础 ============ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+  background:#0d0b1e;
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:24px 12px;
+  background-image:radial-gradient(ellipse at 20% 10%,rgba(124,92,255,.18),transparent 50%),
+                   radial-gradient(ellipse at 80% 90%,rgba(61,220,151,.10),transparent 50%);
+}
+.phone{
+  width:390px;height:844px;max-height:94vh;
+  background:linear-gradient(180deg,#1a1738 0%,#221d4a 55%,#191537 100%);
+  border-radius:44px;border:10px solid #05040c;
+  box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 0 0 2px rgba(255,255,255,.05);
+  overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+}
+
+/* ============ PC 演示台 ============ */
+.phone{margin-left:auto;margin-right:auto}
+.stage-info{display:none;color:#fff;text-align:left;max-width:330px}
+.stage-info h1{font-size:30px}
+.stage-info .s-sub{color:rgba(255,255,255,.55);margin-top:8px;font-size:14px}
+.stage-info ul{list-style:none;margin-top:22px}
+.stage-info li{color:rgba(255,255,255,.78);font-size:14px;line-height:2.2}
+.stage-info .s-hint{margin-top:22px;font-size:13px;color:#3ddc97;background:rgba(61,220,151,.1);border:1px solid rgba(61,220,151,.3);padding:10px 14px;border-radius:12px}
+@media (min-width:1024px){
+  body{gap:64px}
+  .stage-info{display:block}
+  .phone{margin-left:0;margin-right:0}
+}
+
+/* ============ 手机端全屏自适应：真机打开时手机壳消失，变成 App 全屏 ============ */
+@media (max-width:480px){
+  body{padding:0;min-height:100dvh}
+  .phone{width:100%;height:100dvh;max-height:none;border:none;border-radius:0;box-shadow:none}
+  .head,.topbar{padding-top:max(20px,env(safe-area-inset-top))}
+}
+.stars::before,.stars::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:36px;
+  background-image:
+    radial-gradient(2px 2px at 15% 12%,rgba(255,255,255,.7),transparent),
+    radial-gradient(1.5px 1.5px at 72% 8%,rgba(255,255,255,.5),transparent),
+    radial-gradient(2px 2px at 88% 22%,rgba(255,255,255,.4),transparent),
+    radial-gradient(1.5px 1.5px at 40% 5%,rgba(255,255,255,.6),transparent),
+    radial-gradient(2px 2px at 55% 18%,rgba(255,255,255,.35),transparent);
+}
+::-webkit-scrollbar{width:0;height:0}
+
+/* ============ 顶栏 ============ */
+.topbar{padding:52px 20px 14px;display:flex;align-items:center;gap:12px;position:relative;z-index:2}
+.avatar{
+  width:52px;height:52px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#7c5cff,#b84dff);
+  display:flex;align-items:center;justify-content:center;font-size:26px;
+  border:3px solid rgba(255,255,255,.25);box-shadow:0 4px 14px rgba(124,92,255,.5);
+}
+.userinfo{flex:1;min-width:0}
+.username{color:#fff;font-weight:700;font-size:17px;display:flex;align-items:center;gap:6px}
+.lvl{font-size:11px;font-weight:600;color:#1a1430;background:linear-gradient(90deg,#ffd76e,#ffb84d);padding:2px 8px;border-radius:20px}
+.streak{
+  display:flex;align-items:center;gap:4px;color:#ffb84d;font-weight:700;font-size:14px;
+  background:rgba(255,184,77,.12);border:1px solid rgba(255,184,77,.35);
+  padding:6px 12px;border-radius:20px;
+}
+.streak small{font-weight:400;color:rgba(255,220,170,.8);font-size:11px}
+
+.xpbar{padding:0 20px 16px;position:relative;z-index:2}
+.xpbar .label{display:flex;justify-content:space-between;color:rgba(255,255,255,.65);font-size:12px;margin-bottom:6px}
+.xpbar .label b{color:#3ddc97}
+.track{height:12px;background:rgba(255,255,255,.1);border-radius:8px;overflow:hidden;position:relative}
+.fill{height:100%;width:68%;border-radius:8px;background:linear-gradient(90deg,#3ddc97,#7c5cff);box-shadow:0 0 12px rgba(61,220,151,.6);transition:width .8s cubic-bezier(.22,1,.36,1)}
+
+/* ============ 地图区 ============ */
+.mapwrap{flex:1;overflow-y:auto;padding:8px 20px 96px;position:relative;z-index:2}
+.maptitle{color:rgba(255,255,255,.5);font-size:12px;letter-spacing:2px;text-align:center;margin:6px 0 18px}
+.maptitle b{color:rgba(255,255,255,.85);letter-spacing:0;font-size:13px}
+
+.path{position:relative;padding-bottom:30px}
+.path::before{
+  content:"";position:absolute;left:50%;top:0;bottom:0;width:4px;transform:translateX(-50%);
+  background:repeating-linear-gradient(180deg,rgba(255,255,255,.22) 0 10px,transparent 10px 22px);
+  border-radius:2px;
+}
+.node{position:relative;display:flex;align-items:center;margin-bottom:34px;cursor:pointer}
+.node .dot{
+  width:64px;height:64px;border-radius:50%;flex-shrink:0;position:relative;z-index:2;
+  display:flex;align-items:center;justify-content:center;font-size:26px;
+  background:linear-gradient(135deg,#2a2456,#3a3170);
+  border:3px solid rgba(255,255,255,.14);color:rgba(255,255,255,.35);
+}
+.node .card{
+  flex:1;background:rgba(255,255,255,.07);backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:12px 14px;color:rgba(255,255,255,.55);
+}
+.node .card h4{font-size:14px;margin-bottom:3px;color:rgba(255,255,255,.75)}
+.node .card p{font-size:11px}
+.node.done .dot{
+  background:linear-gradient(135deg,#3ddc97,#1fa87a);border-color:rgba(61,220,151,.7);
+  color:#fff;box-shadow:0 0 18px rgba(61,220,151,.45);
+}
+.node.done .card h4::after{content:" ✓";color:#3ddc97}
+.node .card .stars-rate{color:#ffd76e;font-size:11px;margin-top:4px;letter-spacing:2px}
+.node.current .dot{
+  background:linear-gradient(135deg,#7c5cff,#b84dff);border-color:#c9b8ff;color:#fff;
+  animation:pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 5px rgba(124,92,255,.22),0 0 22px rgba(124,92,255,.6)}50%{box-shadow:0 0 0 10px rgba(124,92,255,.12),0 0 34px rgba(124,92,255,.85)}}
+.node.current .card{background:rgba(124,92,255,.16);border-color:rgba(124,92,255,.5);color:#fff}
+.node.current .card h4{color:#fff;font-size:15px}
+.node.current .card .go{
+  display:inline-block;margin-top:8px;font-size:12px;font-weight:700;color:#1a1430;
+  background:linear-gradient(90deg,#ffd76e,#ffb84d);padding:5px 14px;border-radius:16px;
+}
+.node:nth-child(odd){flex-direction:row}
+.node:nth-child(odd) .card{margin-left:14px}
+.node:nth-child(even){flex-direction:row-reverse}
+.node:nth-child(even) .card{margin-right:14px;text-align:right}
+.node.boss .dot{
+  background:linear-gradient(135deg,#ff5c8a,#ff8a5c);border-color:rgba(255,140,120,.8);
+  width:74px;height:74px;font-size:30px;box-shadow:0 0 24px rgba(255,92,138,.55);
+}
+.node.boss .card{background:rgba(255,92,138,.12);border-color:rgba(255,92,138,.4)}
+.node.boss .card h4{color:#ffb3c8}
+.node.locked{cursor:not-allowed}
+
+/* 通关毕业横幅 */
+.clear-banner{
+  margin:0 4px 20px;padding:14px;border-radius:16px;text-align:center;
+  background:linear-gradient(135deg,rgba(255,215,110,.15),rgba(255,138,92,.1));
+  border:1px solid rgba(255,215,110,.4);
+}
+.clear-banner b{color:#ffd76e;font-size:14px}
+.clear-banner p{color:rgba(255,255,255,.6);font-size:12px;margin-top:4px}
+
+/* 重置演示 */
+.reset{
+  text-align:center;color:rgba(255,255,255,.25);font-size:11px;margin-top:10px;
+  text-decoration:underline;cursor:pointer;
+}
+
+/* ============ 底部导航 ============ */
+.navbar{
+  position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;
+  background:rgba(13,10,32,.92);backdrop-filter:blur(14px);
+  border-top:1px solid rgba(255,255,255,.08);padding:10px 0 22px;
+}
+.navbar a{
+  flex:1;text-align:center;text-decoration:none;color:rgba(255,255,255,.45);
+  font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;
+}
+.navbar a span{font-size:22px}
+.navbar a.on{color:#b39dff}
+</style>
+</head>
+<body>
+<!-- PC 演示台介绍（仅宽屏显示，不影响手机端） -->
+<aside class="stage-info">
+  <h1>🎮 四六级冲关</h1>
+  <p class="s-sub">🗺️ 闯关地图 · 学生端演示</p>
+  <ul>
+    <li>🗺️ 闯关地图 → Boss 真题卷 → 积分兑换</li>
+    <li>🐹 小队组队 · 组内互相提醒</li>
+    <li>🏆 班级联赛 · 教师可隐藏排行</li>
+    <li>🏪 XP 兑换免早自习券等真实福利</li>
+  </ul>
+  <p class="s-hint">📱 用手机浏览器打开本页 = 全屏 App 体验</p>
+</aside>
+<div class="phone stars">
+  <div class="topbar">
+    <div class="avatar">🦉</div>
+    <div class="userinfo">
+      <div class="username">王小鱼 <span class="lvl">LV.7</span></div>
+      <div style="color:rgba(255,255,255,.5);font-size:12px;margin-top:3px">英语四级 · 冲关中</div>
+    </div>
+    <div class="streak">🔥 2<small>连课</small></div>
+  </div>
+
+  <div class="xpbar">
+    <div class="label"><span>我的积分（XP）</span><span><b id="totalXp">0</b> · 可去商城兑换福利 🏪</span></div>
+    <div class="track"><div class="fill" id="xpFill"></div></div>
+  </div>
+
+  <div class="mapwrap">
+    <div class="maptitle"><b>UNIT 3 · 校园生活</b><br>第 3 周 · 通关解锁 Boss 真题卷</div>
+    <div id="banner"></div>
+    <div class="path" id="path"><!-- JS 渲染 --></div>
+    <div class="reset" id="resetBtn">↺ 重置演示进度</div>
+  </div>
+
+  <nav class="navbar">
+    <a href="index.html" class="on"><span>🗺️</span>闯关</a>
+    <a href="rank.html"><span>🏆</span>联赛</a>
+    <a href="team.html"><span>🐹</span>小队</a>
+    <a href="me.html"><span>😎</span>我的</a>
+  </nav>
+</div>
+
+<script>
+/* 关卡配置（与 quiz.html 题库对应） */
+const LEVELS = [
+  {id:1, icon:"🌱", name:"高频词 20",    desc:"5 题 · 校园核心词汇"},
+  {id:2, icon:"⚡", name:"语法陷阱",      desc:"5 题 · 倒装+虚拟语气"},
+  {id:3, icon:"🎯", name:"阅读速攻",      desc:"5 题 · 短篇阅读限时"},
+  {id:4, icon:"🎧", name:"听力预热",      desc:"5 题 · 对话+短文理解"},
+  {id:5, icon:"📚", name:"词汇复盘",      desc:"5 题 · 错题重练，越错越考"},
+  {id:6, icon:"👑", name:"单元 Boss · 真题混合卷", desc:"8 题 · 710 分制 · 按得分换积分", boss:true},
+];
+
+function load(){ try{ return JSON.parse(localStorage.getItem('cet46_demo')) || {xp:0,unlocked:1,stars:{}}; }catch(e){ return {xp:0,unlocked:1,stars:{}}; } }
+function save(s){ localStorage.setItem('cet46_demo', JSON.stringify(s)); }
+
+function render(){
+  const st = load();
+  document.getElementById('totalXp').textContent = st.xp;
+  document.getElementById('xpFill').style.width = Math.min(100, st.xp / 20) + '%';
+
+  /* 毕业横幅 */
+  const banner = document.getElementById('banner');
+  if(st.unlocked >= 7){
+    banner.innerHTML = `<div class="clear-banner"><b>🎓 本单元已通关！</b><p>Boss 成绩单和积分已入账，去「我的」兑换福利吧</p></div>`;
+  } else banner.innerHTML = '';
+
+  const path = document.getElementById('path');
+  path.innerHTML = '';
+  LEVELS.forEach(lv => {
+    const done = (st.stars[lv.id] || 0) > 0;
+    const isCurrent = lv.id === st.unlocked;
+    const isUnlocked = lv.id <= st.unlocked;
+    const node = document.createElement('div');
+    let cls = 'node';
+    if(lv.boss) cls += ' boss';
+    if(done) cls += ' done';
+    else if(isCurrent) cls += ' current';
+    else cls += ' locked';
+    node.className = cls;
+
+    const starStr = done ? `<div class="stars-rate">${'★'.repeat(st.stars[lv.id])}${'☆'.repeat(3-st.stars[lv.id])}</div>` : '';
+    const btn = !done && isCurrent ? `<span class="go">${lv.boss ? '挑战 Boss →' : '开始冲关 →'}</span>` : '';
+    const stateTxt = done ? '已通关 · 点击可重刷' : isCurrent ? lv.desc : '🔒 通过上一关解锁';
+
+    node.innerHTML = `
+      <div class="dot">${done ? lv.icon : (isUnlocked ? lv.icon : '🔒')}</div>
+      <div class="card">
+        <h4>${lv.id <= 5 ? '第 ' + lv.id + ' 关 · ' : ''}${lv.name.replace(/^(第 \d 关 · )/,'')}</h4>
+        <p>${stateTxt}</p>
+        ${starStr}${btn}
+      </div>`;
+    if(isUnlocked){
+      node.onclick = () => location.href = 'quiz.html?level=' + lv.id;
+    }
+    path.appendChild(node);
+  });
+}
+
+document.getElementById('resetBtn').onclick = () => {
+  if(confirm('确定重置演示进度？积分和关卡解锁都会清零。')){
+    save({xp:0,unlocked:1,stars:{}});
+    render();
+  }
+};
+render();
+</script>
+</body>
+</html>

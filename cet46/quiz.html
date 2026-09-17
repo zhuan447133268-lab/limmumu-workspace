@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>冲关中</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+  background:#0d0b1e;display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:24px 12px;
+  background-image:radial-gradient(ellipse at 20% 10%,rgba(124,92,255,.18),transparent 50%),
+                   radial-gradient(ellipse at 80% 90%,rgba(61,220,151,.10),transparent 50%);
+}
+.phone{
+  width:390px;height:844px;max-height:94vh;
+  background:linear-gradient(180deg,#1a1738 0%,#221d4a 55%,#191537 100%);
+  border-radius:44px;border:10px solid #05040c;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+}
+
+/* ============ 听力音频条 ============ */
+.audiobar{display:flex;align-items:center;gap:10px;margin:12px 0 0;padding:0 2px}
+.playbtn{
+  flex:1;padding:13px;border:none;border-radius:14px;cursor:pointer;
+  font-size:15px;font-weight:700;color:#fff;font-family:inherit;
+  background:linear-gradient(90deg,#7c5cff,#b84dff);
+  box-shadow:0 4px 16px rgba(124,92,255,.4);
+}
+.playbtn.playing{animation:audioPulse 1.2s infinite}
+@keyframes audioPulse{0%,100%{box-shadow:0 4px 16px rgba(124,92,255,.4)}50%{box-shadow:0 4px 28px rgba(184,77,255,.85)}}
+.playhint{font-size:11px;color:rgba(255,255,255,.45);flex-shrink:0}
+
+/* ============ PC 演示台 ============ */
+.phone{margin-left:auto;margin-right:auto}
+.stage-info{display:none;color:#fff;text-align:left;max-width:330px}
+.stage-info h1{font-size:30px}
+.stage-info .s-sub{color:rgba(255,255,255,.55);margin-top:8px;font-size:14px}
+.stage-info ul{list-style:none;margin-top:22px}
+.stage-info li{color:rgba(255,255,255,.78);font-size:14px;line-height:2.2}
+.stage-info .s-hint{margin-top:22px;font-size:13px;color:#3ddc97;background:rgba(61,220,151,.1);border:1px solid rgba(61,220,151,.3);padding:10px 14px;border-radius:12px}
+@media (min-width:1024px){
+  body{gap:64px}
+  .stage-info{display:block}
+  .phone{margin-left:0;margin-right:0}
+}
+
+/* ============ 手机端全屏自适应：真机打开时手机壳消失，变成 App 全屏 ============ */
+@media (max-width:480px){
+  body{padding:0;min-height:100dvh}
+  .phone{width:100%;height:100dvh;max-height:none;border:none;border-radius:0;box-shadow:none}
+  .head,.topbar{padding-top:max(20px,env(safe-area-inset-top))}
+}
+::-webkit-scrollbar{width:0;height:0}
+
+/* 关卡头 */
+.head{padding:52px 20px 10px;display:flex;align-items:center;gap:12px}
+.quit{
+  width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);font-size:16px;cursor:pointer;
+  text-decoration:none;display:flex;align-items:center;justify-content:center;
+}
+.head .meta{flex:1}
+.head .meta h3{color:#fff;font-size:16px}
+.head .meta p{color:rgba(255,255,255,.5);font-size:12px;margin-top:2px}
+.heart{color:#ff5c8a;font-weight:700;font-size:14px;background:rgba(255,92,138,.12);
+  padding:6px 12px;border-radius:16px;border:1px solid rgba(255,92,138,.3)}
+
+/* 进度 + combo */
+.prog{padding:6px 20px 4px}
+.prog .nums{display:flex;justify-content:space-between;color:rgba(255,255,255,.55);font-size:12px;margin-bottom:6px}
+.prog .nums b{color:#fff}
+.track{height:10px;background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden}
+.fill{height:100%;width:0%;background:linear-gradient(90deg,#7c5cff,#3ddc97);border-radius:6px;transition:width .4s ease}
+.combo{
+  text-align:center;color:#ffb84d;font-weight:800;font-size:15px;height:26px;
+  text-shadow:0 0 14px rgba(255,184,77,.6);
+}
+
+/* 题卡 */
+.qcard{
+  margin:14px 20px 0;background:rgba(255,255,255,.08);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px 20px;flex-shrink:0;
+  max-height:300px;overflow-y:auto;
+}
+.qtype{display:inline-block;font-size:11px;font-weight:700;color:#1a1430;
+  background:linear-gradient(90deg,#b39dff,#7c5cff);padding:3px 10px;border-radius:12px;margin-bottom:12px}
+.qtype.boss{background:linear-gradient(90deg,#ffd76e,#ff8a5c)}
+.qtext{color:#fff;font-size:16px;line-height:1.7;font-weight:600;white-space:pre-line}
+
+/* 选项 */
+.opts{padding:16px 20px 30px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
+.opt{
+  display:flex;align-items:center;gap:12px;padding:15px 16px;border-radius:16px;cursor:pointer;
+  background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);
+  color:#fff;font-size:14px;transition:all .15s ease;user-select:non;
+  user-select:none;
+}
+.opt .key{
+  width:30px;height:30px;border-radius:10px;flex-shrink:0;
+  background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;color:rgba(255,255,255,.7);
+}
+.opt:active{transform:scale(.97)}
+.opt.right{background:rgba(61,220,151,.18);border-color:#3ddc97;box-shadow:0 0 16px rgba(61,220,151,.35)}
+.opt.right .key{background:#3ddc97;color:#0b241a}
+.opt.wrong{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.2)}
+.opt.wrong .key{background:rgba(255,255,255,.15)}
+.opt.dim{opacity:.45}
+.shake{animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* XP 飘字 */
+.float-xp{
+  position:absolute;color:#3ddc97;font-weight:800;font-size:20px;pointer-events:none;z-index:9;
+  text-shadow:0 0 12px rgba(61,220,151,.8);animation:floatUp 1s ease forwards;
+}
+@keyframes floatUp{0%{opacity:0;transform:translateY(6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-46px)}}
+
+/* 底部反馈条 */
+.feedback{
+  position:absolute;left:0;right:0;bottom:0;z-index:8;padding:16px 20px 30px;
+  background:rgba(20,16,44,.97);border-top:1px solid rgba(255,255,255,.1);
+  transform:translateY(110%);transition:transform .3s cubic-bezier(.22,1,.36,1);
+}
+.feedback.show{transform:translateY(0)}
+.fb-ok h4{color:#3ddc97;font-size:16px;margin-bottom:4px}
+.fb-no h4{color:#ffb84d;font-size:16px;margin-bottom:4px}
+.fb-ok p,.fb-no p{color:rgba(255,255,255,.75);font-size:13px;line-height:1.6}
+.fb-no .ans{color:#3ddc97;font-weight:700}
+.fb-btn{
+  margin-top:12px;width:100%;padding:14px;border:none;border-radius:14px;cursor:pointer;
+  font-size:15px;font-weight:700;color:#1a1430;
+  background:linear-gradient(90deg,#3ddc97,#7c5cff);
+}
+.fb-btn.no{background:linear-gradient(90deg,#ffd76e,#ffb84d)}
+
+/* 结算弹层 */
+.overlay{
+  position:absolute;inset:0;z-index:20;background:rgba(8,6,20,.85);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;padding:30px;
+}
+.result{
+  width:100%;max-height:92%;overflow-y:auto;
+  background:linear-gradient(180deg,#2b2358,#1d1840);
+  border:1px solid rgba(124,92,255,.4);border-radius:24px;padding:30px 24px;text-align:center;
+  animation:pop .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+.result .emoji{font-size:52px;animation:bounce 1s ease infinite}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.result h2{color:#fff;font-size:22px;margin:10px 0 4px}
+.result .big-stars{color:#ffd76e;font-size:30px;letter-spacing:6px;margin:6px 0;text-shadow:0 0 16px rgba(255,215,110,.6)}
+.result .xp{color:#3ddc97;font-weight:800;font-size:18px;margin:8px 0 2px}
+.result .sub{color:rgba(255,255,255,.55);font-size:13px;line-height:1.7}
+.reward{
+  margin:14px 0;padding:12px;border-radius:14px;font-size:13px;color:#ffd76e;
+  background:rgba(255,215,110,.1);border:1px dashed rgba(255,215,110,.4);
+}
+.result a,.result button.act{
+  display:block;width:100%;margin-top:8px;padding:14px;border-radius:14px;text-decoration:none;
+  font-weight:700;font-size:15px;color:#1a1430;background:linear-gradient(90deg,#ffd76e,#ffb84d);
+  border:none;cursor:pointer;
+}
+.result a.ghost,.result button.ghost{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);margin-top:10px;font-weight:500}
+/* 本关总结 */
+.q-summary{
+  margin:14px 0;text-align:left;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;padding:10px 12px;max-height:170px;overflow-y:auto;
+}
+.q-summary::-webkit-scrollbar{width:4px}
+.q-summary::-webkit-scrollbar-thumb{background:rgba(124,92,255,.5);border-radius:2px}
+.qs-row{
+  display:flex;align-items:center;gap:10px;padding:8px 4px;
+  border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;
+}
+.qs-row:last-child{border-bottom:none}
+.qs-row .mark{width:24px;height:24px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.qs-row .mark.ok{background:rgba(61,220,151,.2);color:#3ddc97}
+.qs-row .mark.no{background:rgba(255,184,77,.18);color:#ffb84d}
+.qs-row .qs-type{color:rgba(255,255,255,.45);flex-shrink:0;width:52px}
+.qs-row .qs-tip{color:rgba(255,255,255,.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xp-detail{display:flex;justify-content:center;gap:16px;font-size:12px;color:rgba(255,255,255,.55);margin-top:6px;flex-wrap:wrap}
+.xp-detail b{color:#3ddc97}
+
+/* Boss 卷面分 */
+.score-num{font-size:44px;font-weight:900;color:#ffd76e;text-shadow:0 0 24px rgba(255,215,110,.5)}
+.score-label{color:rgba(255,255,255,.5);font-size:12px;margin-bottom:8px}
+.score-detail{display:flex;justify-content:center;gap:24px;margin:12px 0;font-size:13px;color:rgba(255,255,255,.7)}
+.score-detail b{color:#fff}
+</style>
+</head>
+<body>
+<!-- PC 演示台介绍（仅宽屏显示，不影响手机端） -->
+<aside class="stage-info">
+  <h1>🎮 四六级冲关</h1>
+  <p class="s-sub">⚔️ 闯关进行中 · 学生端演示</p>
+  <ul>
+    <li>🗺️ 闯关地图 → Boss 真题卷 → 积分兑换</li>
+    <li>🐹 小队组队 · 组内互相提醒</li>
+    <li>🏆 班级联赛 · 教师可隐藏排行</li>
+    <li>🏪 XP 兑换免早自习券等真实福利</li>
+  </ul>
+  <p class="s-hint">📱 用手机浏览器打开本页 = 全屏 App 体验</p>
+</aside>
+<div class="phone" id="phone">
+  <div class="head">
+    <a class="quit" href="index.html">✕</a>
+    <div class="meta"><h3 id="lvName">第 1 关</h3><p id="lvSub"></p></div>
+    <div class="heart">❤️ 3</div>
+  </div>
+
+  <div class="prog">
+    <div class="nums"><span>第 <b id="qNum">1</b> / <b id="qTotal">5</b> 题</span><span>⏱ <b id="timer">10:00</b></span></div>
+    <div class="track"><div class="fill" id="fill"></div></div>
+  </div>
+  <div class="combo" id="combo"></div>
+
+  <!-- 听力音频条（仅听力题显示） -->
+  <div class="audiobar" id="audiobar" hidden>
+    <button class="playbtn" id="playBtn">▶ 播放音频</button>
+    <span class="playhint" id="playHint">可重复播放</span>
+  </div>
+  <audio id="auEl" preload="auto"></audio>
+
+  <div class="qcard">
+    <span class="qtype" id="qType">词汇</span>
+    <div class="qtext" id="qText"></div>
+  </div>
+
+  <div class="opts" id="opts"></div>
+
+  <div class="feedback" id="fbOk">
+    <div class="fb-ok"><h4 id="okTitle">✅ 拿下！</h4><p id="okSub"></p></div>
+    <button class="fb-btn" onclick="next()">继续 →</button>
+  </div>
+  <div class="feedback" id="fbNo">
+    <div class="fb-no"><h4 id="noTitle"></h4><p id="noSub"></p></div>
+    <button class="fb-btn no" onclick="next()">记住了，下一题 →</button>
+  </div>
+
+  <!-- 通用结算 -->
+  <div class="overlay" id="overlay" hidden>
+    <div class="result">
+      <div class="emoji" id="rEmoji">🏆</div>
+      <h2 id="rTitle">通关！</h2>
+      <div class="big-stars" id="rStars">★★★</div>
+      <div class="xp" id="rXp">+90 XP</div>
+      <p class="sub" id="rSub"></p>
+      <div class="q-summary" id="qSummary"></div>
+      <div class="xp-detail" id="xpDetail"></div>
+      <div class="reward" id="rReward" hidden></div>
+      <a id="btnNext" href="#">下一关 →</a>
+      <a class="ghost" href="index.html">返回地图 🗺️</a>
+    </div>
+  </div>
+
+  <!-- Boss 结算 -->
+  <div class="overlay" id="bossOverlay" hidden>
+    <div class="result">
+      <div class="emoji">👑</div>
+      <h2>单元 Boss · 挑战完成！</h2>
+      <div class="score-label">本次真题卷得分（710 分制）</div>
+      <div class="score-num" id="bossScore">580</div>
+      <div class="score-detail">
+        <span>答对 <b id="bossCorrect">6</b>/8 题</span>
+        <span>获得 <b id="bossXp" style="color:#3ddc97">+150 XP</b></span>
+      </div>
+      <p class="sub" id="bossSub"></p>
+      <div class="reward" id="bossReward"></div>
+      <a href="me.html">🏪 去兑换积分福利 →</a>
+      <a class="ghost" href="index.html">返回地图 🗺️</a>
+    </div>
+  </div>
+
+  <!-- 失败 -->
+  <div class="overlay" id="failOverlay" hidden>
+    <div class="result">
+      <div class="emoji">💫</div>
+      <h2>差一点点！</h2>
+      <p class="sub">爱心用完了。别灰心——错题已经收进复盘关，<br>升级打怪本来就要二刷。</p>
+      <button class="act" onclick="retry()">原地复活，再来一次 🔁</button>
+      <a class="ghost" href="index.html">先回地图 🗺️</a>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= 题库 ================= */
+const QBANK = {
+1:{name:"第 1 关 · 高频词",icon:"🌱",type:"词汇",time:8,qs:[
+  {t:"词汇",q:"We need to find ____ near the campus before the semester starts.",o:["accommodation","application","appointment","argument"],a:0,tip:"accommodation = 住宿，开学找房是校园高频场景"},
+  {t:"词汇",q:"The professor asked us to ____ the data carefully before drawing any conclusions.",o:["analyze","apologize","announce","arrange"],a:0,tip:"analyze data = 分析数据，论文高频动词"},
+  {t:"词汇",q:"The new rule will be ____ to all students without exception.",o:["applied","appealed","appointed","approached"],a:0,tip:"apply to = 适用于；be applied to 被动"},
+  {t:"词汇",q:"She gave a ____ explanation that everyone could follow.",o:["comprehensive","compulsory","consecutive","controversial"],a:0,tip:"comprehensive = 全面的；compulsory = 强制的，形近词辨析"},
+  {t:"词汇",q:"The team finally ____ the project after two years of hard work.",o:["completed","competed","complained","composed"],a:0,tip:"complete the project = 完成项目"}
+]},
+2:{name:"第 2 关 · 语法陷阱",icon:"⚡",type:"语法",time:8,qs:[
+  {t:"语法",q:"Not until midnight ____ the experiment.",o:["did they finish","they finished","finished they","they had finished"],a:0,tip:"Not until 开头要倒装：did they finish"},
+  {t:"语法",q:"If I ____ you, I would take the offer without hesitation.",o:["were","am","was","be"],a:0,tip:"虚拟语气：与现在相反，从句用 were"},
+  {t:"语法",q:"The report, ____ by the committee last week, will be published soon.",o:["approved","approving","approves","to approve"],a:0,tip:"过去分词作后置定语：被委员会批准"},
+  {t:"语法",q:"Hardly ____ at the station when the train left.",o:["had I arrived","I had arrived","did I arrive","I arrived"],a:0,tip:"Hardly...when 倒装：Hardly had + 主语 + 过去分词"},
+  {t:"语法",q:"She suggested that he ____ the job offer.",o:["take","takes","took","taken"],a:0,tip:"suggest 表建议接虚拟：(should) + 动词原形"}
+]},
+3:{name:"第 3 关 · 阅读速攻",icon:"🎯",type:"阅读",time:9,qs:[
+  {t:"阅读",q:"The library will extend its opening hours during finals week. Students can now study there until midnight.\n\n考试周图书馆的情况是怎样的？",o:["开到晚上 12 点","彻底闭馆","只向老师开放","缩短开放时间"],a:0,tip:"extend = 延长；finals week = 考试周"},
+  {t:"阅读",q:"While online courses offer flexibility, studies show that students who never interact with classmates are more likely to drop out.\n\n这段话主要想说明什么？",o:["网课虽灵活，但缺少同伴互动会增加辍学风险","网课不如线下课","学生都应该上线下的课","网课非常灵活方便"],a:0,tip:"while 让步转折：重点在逗号之后"},
+  {t:"阅读",q:"The new smartphone is prohibitively expensive for most students.\n\nprohibitively 在句中最接近的意思是？",o:["高得令人买不起","明确禁止地","逐步上涨地","出人意料地"],a:0,tip:"prohibitively expensive = 贵到买不起的程度"},
+  {t:"阅读",q:"Campus recycling bins, introduced last fall, now collect over a ton of plastic bottles every month.\n\n回收箱是什么时候引入的？",o:["去年秋天","上个月","本学期初","文中未提及"],a:0,tip:"细节定位：last fall = 去年秋天"},
+  {t:"阅读",q:"He turned a blind eye to the problem, hoping it would go away.\n\nturn a blind eye to 的意思是？",o:["对……视而不见","睁大眼睛看","盲目跟从","仔细检查"],a:0,tip:"固定搭配，四级阅读高频"}
+]},
+4:{name:"第 4 关 · 听力预热",icon:"🎧",type:"听力",time:9,qs:[
+  {t:"听力",s:"M: Have you finished the chemistry lab report?\nW: Almost. But the data section still needs a lot of work. I was up until 2 a.m.",q:"🎧 听对话：\n\nM: Have you finished the chemistry lab report?\nW: Almost. But the data section still needs a lot of work. I was up until 2 a.m.\n\n女士是什么意思？",o:["报告还没写完","报告已经交了","她对数据很满意","她昨晚睡得很好"],a:0,tip:"Almost + but 转折 = 还没完成；be up until 2 a.m. = 熬到两点"},
+  {t:"听力",s:"M: Do you want to grab lunch at the new canteen?\nW: I'd love to, but I have a class in ten minutes.",q:"🎧 听对话：\n\nM: Do you want to grab lunch at the new canteen?\nW: I'd love to, but I have a class in ten minutes.\n\n女士接下来要做什么？",o:["去上课","去新食堂吃饭","十分钟后再吃饭","取消课程"],a:0,tip:"I'd love to, but... = 委婉拒绝 + 说明原因"},
+  {t:"听力",s:"The university announced that the gym will close for renovation next month. Members can use the off-campus sports center for free during this period.",q:"🎧 听短文：\n\nThe university announced that the gym will close for renovation next month. Members can use the off-campus sports center for free during this period.\n\n健身房关闭期间，会员可以怎么锻炼？",o:["免费使用校外体育中心","免费使用校内其他健身房","暂停一切锻炼","原价租用校外场地"],a:0,tip:"细节题：for free + off-campus sports center"},
+  {t:"听力",s:"W: I'm thinking of dropping the statistics course. It's too hard.\nM: Why not talk to the professor first? She might offer some help.",q:"🎧 听对话：\n\nW: I'm thinking of dropping the statistics course. It's too hard.\nM: Why not talk to the professor first? She might offer some help.\n\n男士给女士的建议是什么？",o:["先和教授谈谈","直接退课","换一门简单的课","找同学帮忙"],a:0,tip:"Why not... = 提建议"},
+  {t:"听力",s:"Due to heavy rain, tomorrow's outdoor concert will be moved to the indoor stadium. Tickets remain valid.",q:"🎧 听短文：\n\nDue to heavy rain, tomorrow's outdoor concert will be moved to the indoor stadium. Tickets remain valid.\n\n关于明天的音乐会，我们知道什么？",o:["改到室内举行，票仍然有效","因雨取消","改期到下个月","需要重新买票"],a:0,tip:"moved to + remain valid = 换地点不废票"}
+]},
+5:{name:"第 5 关 · 词汇复盘",icon:"📚",type:"复盘",time:8,qs:[
+  {t:"复盘",q:"复习关来了——这些是你前面关卡最容易错的词：\n\n____ expensive = 贵得买不起",o:["prohibitively","probably","precisely","previously"],a:0,tip:"prohibitively = 贵到买不起的程度"},
+  {t:"复盘",q:"The new rule will be ____ to all students.（适用于）",o:["applied","appealed","appointed","approached"],a:0,tip:"apply to = 适用于"},
+  {t:"复盘",q:"____ until midnight did they finish the experiment.（倒装）",o:["Not","No sooner","Hardly","Scarcely"],a:0,tip:"Not until 开头接倒装句"},
+  {t:"复盘",q:"online courses offer ____, but...",o:["flexibility","facility","faculty","festival"],a:0,tip:"flexibility = 灵活性；facility = 设施"},
+  {t:"复盘",q:"students are more likely to ____（辍学）",o:["drop out","fall out","come out","turn out"],a:0,tip:"drop out = 辍学/退出，阅读高频短语"}
+]},
+6:{name:"单元 Boss · 真题混合卷",icon:"👑",type:"真题",time:12,boss:true,qs:[
+  {t:"词汇",q:"真题风格：The government has decided to ____ the reform measures immediately.",o:["implement","impress","improve","import"],a:0,tip:"implement = 实施（政策/措施）"},
+  {t:"语法",q:"真题风格：Only in this way ____ solve the problem.",o:["can we","we can","we do","did we"],a:0,tip:"Only + 状语开头要倒装"},
+  {t:"阅读",q:"真题风格：Passage — The study, involving 2,000 college students, found that those who reviewed notes within 24 hours retained 40% more information a week later.\n\n研究发现了什么？",o:["24 小时内复习笔记的学生一周后多记住 40% 内容","2000 名学生都不复习笔记","复习笔记毫无作用","一周后所有学生都忘了 40%"],a:0,tip:"数字细节题：40% more 是多记 40%，不是忘 40%"},
+  {t:"翻译",q:"中译英选择：\"随着经济的快速发展，人们的生活水平显著提高。\"",o:["With the rapid development of the economy, people's living standards have improved significantly.","With the rapid develop of economy, people's living level has raised obviously.","As the economy develops fast, people's life level improved large.","Along the economy quick development, people live better."],a:0,tip:"development 用名词；living standards 固定搭配"},
+  {t:"听力",s:"M: The deadline for the essay is Friday, right?\nW: Actually, the professor extended it to next Monday.",q:"🎧 真题风格：\n\nM: The deadline for the essay is Friday, right?\nW: Actually, the professor extended it to next Monday.\n\n论文截止日期是什么时候？",o:["下周一","本周五","明天","文中没说"],a:0,tip:"extend to = 延期到"},
+  {t:"词汇",q:"真题风格：It is ____ that we should raise students' awareness of time management.",o:["essential","expensive","explicit","external"],a:0,tip:"It is essential that... = ……至关重要"},
+  {t:"语法",q:"真题风格：By the end of next month, we ____ this project.",o:["will have completed","will complete","have completed","complete"],a:0,tip:"By the end of + 将来 → 将来完成时"},
+  {t:"阅读",q:"真题风格：Passage — Some researchers argue that social media, despite connecting people online, may weaken face-to-face communication skills.\n\n研究者的态度是？",o:["社媒虽能联络人，但可能削弱面对面沟通能力","社媒彻底破坏了人际关系","社媒对线下一对一交流有好处","研究者反对使用一切社媒"],a:0,tip:"despite 让步转折，argue 表观点"}
+]}
+};
+
+/* ================= 进度存档 ================= */
+function load(){ try{ return JSON.parse(localStorage.getItem('cet46_demo')) || {xp:0,unlocked:1,stars:{}}; }catch(e){ return {xp:0,unlocked:1,stars:{}}; } }
+function save(s){ localStorage.setItem('cet46_demo', JSON.stringify(s)); }
+
+/* ================= 引擎 ================= */
+const params = new URLSearchParams(location.search);
+const lvId = parseInt(params.get('level') || '1');
+const LV = QBANK[lvId] || QBANK[1];
+const QS = LV.qs;
+
+/* ================= 听力音频 ================= */
+const AU_MAP = {'4_0':'audio/l4q1.mp3','4_1':'audio/l4q2.mp3','4_2':'audio/l4q3.mp3','4_3':'audio/l4q4.mp3','4_4':'audio/l4q5.mp3','6_4':'audio/l6q5.mp3'};
+const auEl = document.getElementById('auEl');
+const playBtn = document.getElementById('playBtn');
+const playHint = document.getElementById('playHint');
+
+playBtn.onclick = () => { if(auEl.paused){ auEl.play().catch(()=>{}); } else { auEl.pause(); } };
+auEl.onplay  = () => { playBtn.textContent = '⏸ 播放中，点我暂停'; playBtn.classList.add('playing'); };
+auEl.onpause = () => { if(auEl.ended) return; playBtn.classList.remove('playing'); playBtn.textContent = auEl.currentTime > 0 ? '▶ 继续播放' : '▶ 播放音频'; };
+auEl.onended = () => { playBtn.classList.remove('playing'); playBtn.textContent = '🔁 重播'; playHint.textContent = '听清了再作答'; };
+auEl.onerror = () => {
+  /* 音频缺失降级：回退为阅读原文 */
+  const q = QS[idx];
+  if(q.s){ document.getElementById('qText').textContent = '📄 音频未加载，请阅读原文：\n\n' + q.q; }
+  document.getElementById('audiobar').hidden = true;
+};
+
+let idx = 0, combo = 0, lives = 3, xp = 0, correct = 0, locked = false;
+let bestCombo = 0, curAns = 0;
+let results = [];          /* 逐题记录：{t:题型, ok:对错, tip:考点} */
+let xpFromQuiz = 0;        /* 纯答题获得的 XP（用于明细） */
+
+document.getElementById('lvName').textContent = LV.name;
+document.getElementById('lvSub').textContent = (LV.boss ? "混合真题 · 限时挑战 · 按得分换 XP" : LV.type + " · 共 " + QS.length + " 题 · 约 " + Math.max(4,QS.length+2) + " 分钟");
+document.getElementById('qTotal').textContent = QS.length;
+if(LV.boss) document.getElementById('qType').classList.add('boss');
+
+const PRAISES = ["拿下！","稳得一批 💪","这题难不倒你","手感来了 🔥","正确率拉满","行云流水"];
+const COMFORTS = ["这题考过 3 次了，错得不冤 😌","没关系，记住就是赚到","上次全班的坑，你替大家踩了","错题已加入复盘关，回头收拾它","差一点！这分下次拿回来"];
+
+function render(){
+  locked = false;
+  const q = QS[idx];
+  document.getElementById('qNum').textContent = idx + 1;
+  document.getElementById('qType').textContent = q.t;
+  /* 听力题：只展示问题本身，原文走音频 */
+  const auSrc = AU_MAP[lvId + '_' + idx];
+  const bar = document.getElementById('audiobar');
+  auEl.pause();
+  playBtn.classList.remove('playing');
+  if(auSrc){
+    bar.hidden = false;
+    playBtn.textContent = '▶ 播放音频';
+    playHint.textContent = '可重复播放 · 双音色';
+    auEl.src = auSrc;
+    const parts = q.q.split('\n\n');
+    document.getElementById('qText').textContent = parts[parts.length - 1];
+    auEl.play().catch(()=>{});   /* 有手势上下文就自动播，被拦截则手动点 */
+  }else{
+    bar.hidden = true;
+    auEl.removeAttribute('src');
+    document.getElementById('qText').textContent = q.q;
+  }
+  document.getElementById('fill').style.width = (idx / QS.length * 100) + '%';
+  document.getElementById('combo').textContent = combo >= 2 ? `🔥 ${combo} 连击！` : '';
+  const box = document.getElementById('opts');
+  box.innerHTML = '';
+  /* 选项随机洗牌，正确答案位置不固定 */
+  const order = q.o.map((_, i) => i).sort(() => Math.random() - 0.5);
+  curAns = order.indexOf(q.a);
+  order.forEach((oi, i) => {
+    const d = document.createElement('div');
+    d.className = 'opt';
+    d.innerHTML = `<div class="key">${'ABCD'[i]}</div><div>${q.o[oi]}</div>`;
+    d.onclick = () => pick(i, d);
+    box.appendChild(d);
+  });
+  hideFb();
+}
+
+function pick(i, el){
+  if(locked) return; locked = true;
+  const q = QS[idx];
+  auEl.pause();
+  const all = [...document.querySelectorAll('.opt')];
+  if(i === curAns){
+    combo++; correct++;
+    if(combo > bestCombo) bestCombo = combo;
+    const gain = 20 + (combo - 1) * 5;
+    xp += gain; xpFromQuiz += gain;
+    results.push({t:q.t, ok:true, tip:q.tip});
+    el.classList.add('right');
+    all.forEach(o => { if(o !== el) o.classList.add('dim'); });
+    floatXp(el, '+' + gain + ' XP');
+    document.getElementById('okTitle').textContent = PRAISES[Math.floor(Math.random()*PRAISES.length)];
+    document.getElementById('okSub').textContent = q.tip;
+    showFb('fbOk');
+  }else{
+    combo = 0; lives--;
+    results.push({t:q.t, ok:false, tip:q.tip});
+    document.querySelector('.heart').textContent = '❤️ ' + lives;
+    el.classList.add('wrong','shake');
+    all[curAns].classList.add('right');
+    all.forEach(o => { if(o !== el && o !== all[curAns]) o.classList.add('dim'); });
+    if(lives <= 0){
+      setTimeout(() => { document.getElementById('failOverlay').hidden = false; }, 900);
+    }
+    document.getElementById('noTitle').textContent = COMFORTS[Math.floor(Math.random()*COMFORTS.length)];
+    document.getElementById('noSub').innerHTML = `正确答案 <span class="ans">${'ABCD'[curAns]}</span> · ${q.tip}`;
+    showFb('fbNo');
+  }
+  document.getElementById('fill').style.width = ((idx + 1) / QS.length * 100) + '%';
+}
+
+function floatXp(anchor, txt){
+  const r = anchor.getBoundingClientRect(), p = document.getElementById('phone').getBoundingClientRect();
+  const s = document.createElement('div');
+  s.className = 'float-xp'; s.textContent = txt;
+  s.style.left = (r.left - p.left + r.width/2 - 30) + 'px';
+  s.style.top = (r.top - p.top - 10) + 'px';
+  document.getElementById('phone').appendChild(s);
+  setTimeout(() => s.remove(), 1000);
+}
+
+function showFb(id){ document.getElementById(id).classList.add('show'); }
+function hideFb(){ document.querySelectorAll('.feedback').forEach(f => f.classList.remove('show')); }
+
+function next(){
+  if(idx < QS.length - 1){ idx++; render(); }
+  else finish();
+}
+
+function retry(){
+  idx = 0; combo = 0; lives = 3; xp = 0; correct = 0; bestCombo = 0;
+  results = []; xpFromQuiz = 0;
+  document.querySelector('.heart').textContent = '❤️ 3';
+  document.getElementById('failOverlay').hidden = true;
+  render();
+}
+
+function finish(){
+  /* 写存档 */
+  const st = load();
+  const ratio = correct / QS.length;
+  let stars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1;
+  let gained = xp + 30;                       /* 通关基础分 */
+  if(stars === 3) gained += 20;               /* 三星奖励 */
+  if(LV.boss){
+    gained = correct * 25 + (ratio === 1 ? 50 : 0);
+    const score = Math.round(ratio * 710);
+    st.xp += gained;
+    st.unlocked = Math.max(st.unlocked, 7);   /* Boss 打完，本单元毕业 */
+    save(st);
+    document.getElementById('bossScore').textContent = score;
+    document.getElementById('bossCorrect').textContent = correct;
+    document.getElementById('bossXp').textContent = '+' + gained + ' XP';
+    document.getElementById('bossSub').innerHTML =
+      `当前累计积分 <b style="color:#3ddc97">${st.xp} XP</b>，可去商城兑换免早自习券等福利<br>` +
+      (ratio === 1 ? '满分！你就是本单元最强的崽 👑' : ratio >= 0.6 ? '稳稳过关，错的题已收进复盘关' : '险过！建议回第 5 关复习后再刷一次 Boss');
+    document.getElementById('bossReward').textContent = ratio >= 0.6 ? '📜 通关奖励：2023 年 6 月真题卷 已放入背包' : '📜 再接再厉：达到 60% 正确率即可解锁真题卷';
+    document.getElementById('bossOverlay').hidden = false;
+    return;
+  }
+  st.xp += gained;
+  st.unlocked = Math.max(st.unlocked, lvId + 1);
+  st.stars[lvId] = Math.max(st.stars[lvId] || 0, stars);
+  save(st);
+
+  document.getElementById('rEmoji').textContent = stars === 3 ? '🏆' : stars === 2 ? '🎉' : '💪';
+  document.getElementById('rTitle').textContent = stars === 3 ? '完美通关！' : stars === 2 ? '通关！' : '惊险过关！';
+  document.getElementById('rStars').textContent = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+  document.getElementById('rXp').textContent = `+${gained} XP（累计 ${st.xp}）`;
+  document.getElementById('rSub').innerHTML =
+    `答对 ${correct}/${QS.length} 题 · 最高 ${bestCombo} 连击<br>` +
+    (stars === 3 ? '全对奖励 +20 XP 🎁' : '错题已自动收入「第 5 关 · 词汇复盘」');
+  /* 逐题总结 */
+  document.getElementById('qSummary').innerHTML = results.map((r, i) => `
+    <div class="qs-row">
+      <div class="mark ${r.ok ? 'ok' : 'no'}">${r.ok ? '✓' : '✗'}</div>
+      <div class="qs-type">${r.t}</div>
+      <div class="qs-tip">${r.tip}</div>
+    </div>`).join('');
+  /* XP 明细 */
+  document.getElementById('xpDetail').innerHTML =
+    `<span>答题 <b>+${xpFromQuiz}</b></span><span>通关 <b>+30</b></span>` +
+    (stars === 3 ? `<span>三星奖励 <b>+20</b></span>` : '');
+  const rw = document.getElementById('rReward');
+  if(stars === 3 && lvId === 3){ rw.hidden = false; rw.textContent = '📜 解锁奖励：2023 年 6 月真题卷 已放入背包'; }
+  document.getElementById('btnNext').href = 'quiz.html?level=' + (lvId + 1);
+  document.getElementById('btnNext').textContent = lvId >= 5 ? '挑战终极 Boss 👑' : '下一关 →';
+  document.getElementById('overlay').hidden = false;
+}
+
+/* 倒计时 */
+let sec = LV.time * 60;
+const timerEl = document.getElementById('timer');
+setInterval(() => {
+  if(sec <= 0 || !document.getElementById('overlay').hidden || !document.getElementById('bossOverlay').hidden) return;
+  sec--;
+  timerEl.textContent = String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0');
+}, 1000);
+
+render();
+</script>
+</body>
+</html>

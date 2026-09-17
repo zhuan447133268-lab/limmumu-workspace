@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四六级冲关 · 教师端看板</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+  background:#0f0d20;color:#fff;min-height:100vh;padding:28px;
+  background-image:radial-gradient(ellipse at 15% 0%,rgba(124,92,255,.14),transparent 55%),
+                   radial-gradient(ellipse at 90% 100%,rgba(61,220,151,.08),transparent 55%);
+}
+.wrap{max-width:1240px;margin:0 auto}
+
+/* 顶栏 */
+.top{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+.top h1{font-size:22px}
+.top .cls{
+  padding:8px 18px;border-radius:12px;font-size:14px;cursor:pointer;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);
+}
+.top .cls.on{background:linear-gradient(90deg,#7c5cff,#b84dff);border-color:transparent;color:#fff;font-weight:700}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.export{
+  padding:10px 20px;border:none;border-radius:12px;cursor:pointer;font-size:14px;font-weight:700;
+  color:#1a1430;background:linear-gradient(90deg,#3ddc97,#7c5cff);
+}
+.rank-ctl{
+  display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.75);
+  background:rgba(124,92,255,.1);border:1px dashed rgba(124,92,255,.4);padding:9px 16px;border-radius:12px;
+}
+.switch{position:relative;width:44px;height:24px;cursor:pointer}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;border-radius:24px;background:rgba(255,255,255,.15);transition:.2s}
+.slider::before{content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:.2s}
+.switch input:checked + .slider{background:#7c5cff;box-shadow:0 0 10px rgba(124,92,255,.6)}
+.switch input:checked + .slider::before{transform:translateX(20px)}
+
+/* 统计卡 */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat{
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  border-radius:18px;padding:20px;
+}
+.stat .k{color:rgba(255,255,255,.5);font-size:13px}
+.stat .v{font-size:30px;font-weight:800;margin-top:8px}
+.stat .t{font-size:12px;margin-top:6px}
+.stat .up{color:#3ddc97}
+.stat .warn{color:#ffb84d}
+.stat:nth-child(1) .v{color:#7c5cff}
+.stat:nth-child(2) .v{color:#3ddc97}
+.stat:nth-child(3) .v{color:#ffd76e}
+.stat:nth-child(4) .v{color:#ff9db8}
+
+/* 主体两栏 */
+.main{display:grid;grid-template-columns:380px 1fr;gap:16px}
+.panel{
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);
+  border-radius:18px;padding:20px;
+}
+.panel h3{font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.panel h3 small{color:rgba(255,255,255,.4);font-weight:400;font-size:12px;margin-left:auto}
+
+/* 趋势图（纯CSS柱状） */
+.bars{display:flex;align-items:flex-end;gap:14px;height:180px;padding-top:10px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+.bar .col{
+  width:100%;border-radius:8px 8px 4px 4px;
+  background:linear-gradient(180deg,#7c5cff,rgba(124,92,255,.35));
+  transition:height .6s cubic-bezier(.22,1,.36,1);position:relative;min-height:6px;
+}
+.bar.now .col{background:linear-gradient(180deg,#3ddc97,rgba(61,220,151,.35));box-shadow:0 0 16px rgba(61,220,151,.4)}
+.bar .val{font-size:12px;font-weight:700;color:rgba(255,255,255,.8)}
+.bar .wk{font-size:11px;color:rgba(255,255,255,.4)}
+
+/* 薄弱知识点 */
+.weak{display:flex;flex-direction:column;gap:10px}
+.wrow{display:flex;align-items:center;gap:10px;font-size:13px}
+.wrow .name{width:110px;flex-shrink:0;color:rgba(255,255,255,.8)}
+.wrow .wtrack{flex:1;height:10px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden}
+.wrow .wfill{height:100%;border-radius:6px;background:linear-gradient(90deg,#ffb84d,#ff5c8a)}
+.wrow .pct{width:44px;text-align:right;color:#ffb84d;font-weight:700;font-size:12px}
+.wtip{margin-top:14px;padding:11px 14px;border-radius:12px;font-size:12px;line-height:1.6;
+  background:rgba(255,184,77,.08);border:1px solid rgba(255,184,77,.25);color:rgba(255,255,255,.75)}
+
+/* 学生表 */
+.stu-wrap{max-height:430px;overflow-y:auto;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+  text-align:left;padding:10px 12px;color:rgba(255,255,255,.45);font-weight:500;font-size:12px;
+  border-bottom:1px solid rgba(255,255,255,.1);position:sticky;top:0;background:#171432;
+}
+td{padding:12px;border-bottom:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.85)}
+tr.me td{background:rgba(124,92,255,.1)}
+.pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700}
+.pill.ok{background:rgba(61,220,151,.15);color:#3ddc97}
+.pill.mid{background:rgba(255,184,77,.15);color:#ffb84d}
+.pill.low{background:rgba(255,92,138,.15);color:#ff9db8}
+.adjust{
+  padding:5px 12px;border-radius:10px;font-size:12px;cursor:pointer;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.75);
+}
+.adjust:hover{background:rgba(124,92,255,.25);border-color:rgba(124,92,255,.5)}
+.hidden-note{
+  margin-top:14px;padding:11px 14px;border-radius:12px;font-size:12px;
+  background:rgba(61,220,151,.08);border:1px solid rgba(61,220,151,.25);color:rgba(255,255,255,.75);
+}
+.hidden-note b{color:#3ddc97}
+.hidden-mode .xp-cell{visibility:hidden}
+
+/* 滚动条 */
+.stu-wrap::-webkit-scrollbar{width:8px;height:8px}
+.stu-wrap::-webkit-scrollbar-track{background:rgba(255,255,255,.05);border-radius:4px}
+.stu-wrap::-webkit-scrollbar-thumb{background:rgba(124,92,255,.5);border-radius:4px}
+.stu-wrap::-webkit-scrollbar-thumb:hover{background:rgba(124,92,255,.8)}
+
+@media (max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}.main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="top">
+    <h1>👩‍🏫 冲关看板</h1>
+    <div class="cls on">计科 2301 班 · 34 人</div>
+    <div class="cls">英语 2302 班 · 31 人</div>
+    <div class="right">
+      <div class="rank-ctl">
+        公开排行榜
+        <label class="switch"><input type="checkbox" id="rankToggle" checked><span class="slider"></span></label>
+      </div>
+      <button class="export">📤 导出平时成绩表</button>
+    </div>
+  </div>
+
+  <!-- 统计卡 -->
+  <div class="stats">
+    <div class="stat"><div class="k">本周到课闯关率</div><div class="v">91%</div><div class="t up">▲ 较上周 +6%</div></div>
+    <div class="stat"><div class="k">人均通关数</div><div class="v">3.2 关</div><div class="t up">▲ 较上周 +0.8</div></div>
+    <div class="stat"><div class="k">班级平均 XP</div><div class="v">642</div><div class="t up">▲ 距年级第一还差 58</div></div>
+    <div class="stat"><div class="k">预警学生</div><div class="v">4 人</div><div class="t warn">连续 2 周闯关 &lt; 1 关</div></div>
+  </div>
+
+  <div class="main">
+    <!-- 左栏 -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="panel">
+        <h3>📈 近 8 周通关趋势 <small>单位: 全班总通关数</small></h3>
+        <div class="bars" id="bars"></div>
+      </div>
+      <div class="panel">
+        <h3>🎯 高频错题知识点 <small>来自本周错题本</small></h3>
+        <div class="weak">
+          <div class="wrow"><span class="name">虚拟语气</span><div class="wtrack"><div class="wfill" style="width:72%"></div></div><span class="pct">72%</span></div>
+          <div class="wrow"><span class="name">长难句拆解</span><div class="wtrack"><div class="wfill" style="width:64%"></div></div><span class="pct">64%</span></div>
+          <div class="wrow"><span class="name">词义辨析</span><div class="wtrack"><div class="wfill" style="width:51%"></div></div><span class="pct">51%</span></div>
+          <div class="wrow"><span class="name">固定搭配</span><div class="wtrack"><div class="wfill" style="width:43%"></div></div><span class="pct">43%</span></div>
+        </div>
+        <div class="wtip">💡 建议：下节课前 10 分钟讲「虚拟语气」—— 34 人里 24 人踩过这个坑。</div>
+      </div>
+    </div>
+
+    <!-- 右栏：学生明细 -->
+    <div class="panel">
+      <h3>🧑‍🎓 学生闯关明细 <small>按本周 XP 排序 · 点击「调关」可手动升降关卡</small></h3>
+      <div class="stu-wrap">
+        <table>
+          <thead><tr><th>排名</th><th>学生</th><th>小队</th><th>本周 XP</th><th>通关</th><th>正确率</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="hidden-note" id="hiddenNote" hidden>
+        🔒 排行榜已对学生端隐藏（所有 XP 不可见）。<b>干预建议</b>：本周差距过大时开启，下周恢复可保住竞争氛围。
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 8周趋势 mock */
+const WEEKS = [42,55,48,66,71,63,80,92];
+const bars = document.getElementById('bars');
+const max = Math.max(...WEEKS);
+WEEKS.forEach((v,i) => {
+  const d = document.createElement('div');
+  d.className = 'bar' + (i === WEEKS.length-1 ? ' now' : '');
+  d.innerHTML = `<div class="val">${v}</div><div class="col" style="height:${v/max*100}%"></div><div class="wk">第${i+1}周</div>`;
+  bars.appendChild(d);
+});
+
+/* 学生明细 mock */
+const STU = [
+  ["🥇","陈一帆","汪汪队",940,"5 关","86%","ok","活跃"],
+  ["🥈","李晓萌","喵喵教",905,"5 关","91%","ok","活跃"],
+  ["🥉","赵梓豪","汪汪队",880,"4 关","78%","mid","活跃"],
+  ["4","刘思远","干饭人",855,"4 关","82%","ok","活跃"],
+  ["5","孙可欣","喵喵教",830,"4 关","88%","ok","活跃"],
+  ["6","王小鱼","加油鸭",790,"4 关","75%","mid","活跃",true],
+  ["7","周子墨","孤狼(单人)",760,"3 关","69%","mid","单人队"],
+  ["8","吴雨桐","喵喵教",720,"3 关","80%","ok","活跃"],
+  ["9","郑凯文","干饭人",660,"3 关","71%","mid","活跃"],
+  ["10","林晓雯","加油鸭",615,"2 关","64%","low","预警"],
+  ["11","黄子轩","孤狼(单人)",540,"2 关","58%","low","预警"],
+  ["12","徐若曦","喵喵教",480,"1 关","62%","low","预警"],
+];
+document.getElementById('tbody').innerHTML = STU.map(s => `
+  <tr${s[8] ? ' class="me"' : ''}>
+    <td>${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td>
+    <td class="xp-cell"><b>${s[3]}</b></td><td>${s[4]}</td><td>${s[5]}</td>
+    <td><span class="pill ${s[6]}">${s[7]}</span></td>
+    <td><button class="adjust">调关</button></td>
+  </tr>`).join('');
+
+/* 排行榜开关联动提示 */
+document.getElementById('rankToggle').onchange = function(e){
+  document.getElementById('wrap').classList.toggle('hidden-mode', !e.target.checked);
+  document.getElementById('hiddenNote').hidden = e.target.checked;
+};
+</script>
+</body>
+</html>

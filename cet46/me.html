@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四六级冲关 · 我的</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+  background:#0d0b1e;display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:24px 12px;
+  background-image:radial-gradient(ellipse at 20% 10%,rgba(124,92,255,.18),transparent 50%),
+                   radial-gradient(ellipse at 80% 90%,rgba(61,220,151,.10),transparent 50%);
+}
+.phone{
+  width:390px;height:844px;max-height:94vh;
+  background:linear-gradient(180deg,#1a1738 0%,#221d4a 55%,#191537 100%);
+  border-radius:44px;border:10px solid #05040c;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+}
+
+/* ============ PC 演示台 ============ */
+.phone{margin-left:auto;margin-right:auto}
+.stage-info{display:none;color:#fff;text-align:left;max-width:330px}
+.stage-info h1{font-size:30px}
+.stage-info .s-sub{color:rgba(255,255,255,.55);margin-top:8px;font-size:14px}
+.stage-info ul{list-style:none;margin-top:22px}
+.stage-info li{color:rgba(255,255,255,.78);font-size:14px;line-height:2.2}
+.stage-info .s-hint{margin-top:22px;font-size:13px;color:#3ddc97;background:rgba(61,220,151,.1);border:1px solid rgba(61,220,151,.3);padding:10px 14px;border-radius:12px}
+@media (min-width:1024px){
+  body{gap:64px}
+  .stage-info{display:block}
+  .phone{margin-left:0;margin-right:0}
+}
+
+/* ============ 手机端全屏自适应：真机打开时手机壳消失，变成 App 全屏 ============ */
+@media (max-width:480px){
+  body{padding:0;min-height:100dvh}
+  .phone{width:100%;height:100dvh;max-height:none;border:none;border-radius:0;box-shadow:none}
+  .head,.topbar{padding-top:max(20px,env(safe-area-inset-top))}
+}
+.scroll{flex:1;overflow-y:auto;padding-bottom:100px}
+::-webkit-scrollbar{width:0;height:0}
+/* 用户卡 */
+.ucard{margin:56px 20px 0;padding:22px;border-radius:22px;text-align:center;
+  background:linear-gradient(135deg,rgba(124,92,255,.25),rgba(184,77,255,.12));
+  border:1px solid rgba(124,92,255,.4);}
+.ucard .avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:36px;
+  background:linear-gradient(135deg,#7c5cff,#b84dff);border:3px solid rgba(255,255,255,.3);box-shadow:0 6px 20px rgba(124,92,255,.5)}
+.ucard h2{color:#fff;font-size:19px}
+.ucard p{color:rgba(255,255,255,.55);font-size:12px;margin-top:5px}
+.ucard .badges{margin-top:12px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.ucard .bdg{font-size:11px;padding:4px 11px;border-radius:14px;font-weight:700}
+.bdg.gold{background:rgba(255,215,110,.15);color:#ffd76e;border:1px solid rgba(255,215,110,.35)}
+.bdg.green{background:rgba(61,220,151,.15);color:#3ddc97;border:1px solid rgba(61,220,151,.35)}
+.bdg.purple{background:rgba(124,92,255,.2);color:#c9b8ff;border:1px solid rgba(124,92,255,.4)}
+/* 数据格 */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 20px 0}
+.gcell{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 8px;text-align:center}
+.gcell .v{font-size:20px;font-weight:800;color:#fff}
+.gcell .k{font-size:11px;color:rgba(255,255,255,.45);margin-top:4px}
+.gcell:nth-child(1) .v{color:#3ddc97}
+.gcell:nth-child(2) .v{color:#ffd76e}
+.gcell:nth-child(3) .v{color:#b39dff}
+/* 背包 */
+.bag{margin:14px 20px 0}
+.bag h3{color:rgba(255,255,255,.7);font-size:14px;margin-bottom:10px}
+.items{display:flex;gap:10px}
+.item{
+  flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;padding:14px 8px;text-align:center;font-size:11px;color:rgba(255,255,255,.6);
+}
+.item .ic{font-size:26px;display:block;margin-bottom:6px}
+.item b{color:rgba(255,255,255,.85);display:block;margin-bottom:3px;font-size:12px}
+/* 福利兑换 */
+.shop{display:flex;flex-direction:column;gap:10px}
+.goods{
+  display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:16px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+}
+.goods .g-ic{font-size:26px;width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);border-radius:12px}
+.goods .g-info{flex:1}
+.goods .g-info b{color:#fff;font-size:14px}
+.goods .g-info p{color:rgba(255,255,255,.45);font-size:11px;margin-top:3px}
+.g-btn{
+  padding:8px 18px;border:none;border-radius:12px;cursor:pointer;font-weight:700;font-size:13px;
+  color:#1a1430;background:linear-gradient(90deg,#3ddc97,#7cf5c0);flex-shrink:0;
+}
+.g-btn.gold{background:linear-gradient(90deg,#ffd76e,#ffb84d);box-shadow:0 0 12px rgba(255,184,77,.4)}
+.g-btn:disabled{background:rgba(255,255,255,.12);color:rgba(255,255,255,.35);cursor:not-allowed}
+.goods.hot{border-color:rgba(255,215,110,.4);background:rgba(255,215,110,.07)}
+.goods.off{opacity:.55}
+.shop-note{margin-top:10px;font-size:11px;color:rgba(255,255,255,.4);line-height:1.6}
+.review{margin:14px 20px 96px;padding:16px;border-radius:18px;
+  background:rgba(255,92,138,.07);border:1px solid rgba(255,92,138,.25)}
+.review h4{color:#ff9db8;font-size:14px;margin-bottom:6px}
+.review p{color:rgba(255,255,255,.6);font-size:12px;line-height:1.7}
+.review .go{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;color:#1a1430;background:linear-gradient(90deg,#ff9db8,#ffb84d);padding:7px 16px;border-radius:14px;text-decoration:none}
+/* 底部导航 */
+.navbar{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;background:rgba(13,10,32,.92);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.08);padding:10px 0 22px}
+.navbar a{flex:1;text-align:center;text-decoration:none;color:rgba(255,255,255,.45);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.navbar a span{font-size:22px}
+.navbar a.on{color:#b39dff}
+</style>
+</head>
+<body>
+<!-- PC 演示台介绍（仅宽屏显示，不影响手机端） -->
+<aside class="stage-info">
+  <h1>🎮 四六级冲关</h1>
+  <p class="s-sub">😎 个人中心 · 福利商城</p>
+  <ul>
+    <li>🗺️ 闯关地图 → Boss 真题卷 → 积分兑换</li>
+    <li>🐹 小队组队 · 组内互相提醒</li>
+    <li>🏆 班级联赛 · 教师可隐藏排行</li>
+    <li>🏪 XP 兑换免早自习券等真实福利</li>
+  </ul>
+  <p class="s-hint">📱 用手机浏览器打开本页 = 全屏 App 体验</p>
+</aside>
+<div class="phone">
+  <div class="scroll">
+  <div class="ucard">
+    <div class="avatar">🦉</div>
+    <h2>王小鱼</h2>
+    <p>计科 2301 班 · 英语四级冲关中</p>
+    <div class="badges">
+      <span class="bdg gold">🔥 连课 2 周</span>
+      <span class="bdg green">🎯 全对王 ×1</span>
+      <span class="bdg purple">⚡ LV.7</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="gcell"><div class="v">23</div><div class="k">累计通关</div></div>
+    <div class="gcell"><div class="v" id="meXp">0</div><div class="k">我的积分（XP）</div></div>
+    <div class="gcell"><div class="v">76%</div><div class="k">总正确率</div></div>
+  </div>
+
+  <div class="bag">
+    <h3>🎒 背包</h3>
+    <div class="items">
+      <div class="item"><span class="ic">📜</span><b>真题卷 ×2</b>闯关奖励解锁</div>
+      <div class="item"><span class="ic">🧀</span><b>奶酪 320</b>喂养仓鼠(三期)</div>
+      <div class="item"><span class="ic">🎟️</span><b>免作业券 ×1</b>小队宝箱获得</div>
+    </div>
+  </div>
+
+  <!-- 福利兑换：真实校园特权 -->
+  <div class="bag">
+    <h3>🏪 福利兑换 <small style="font-weight:400;font-size:11px;color:rgba(255,255,255,.4)">当前积分 <b id="shopXp" style="color:#3ddc97">0</b> XP · 每学期限量</small></h3>
+    <div class="shop">
+      <div class="goods">
+        <div class="g-ic">🌅</div>
+        <div class="g-info"><b>免早自习券</b><p>1 次 · 需 300 XP</p></div>
+        <button class="g-btn" data-cost="300" data-name="免早自习券">兑换</button>
+      </div>
+      <div class="goods">
+        <div class="g-ic">🏃</div>
+        <div class="g-info"><b>免早操券</b><p>1 次 · 需 300 XP</p></div>
+        <button class="g-btn" data-cost="300" data-name="免早操券">兑换</button>
+      </div>
+      <div class="goods hot">
+        <div class="g-ic">😴</div>
+        <div class="g-info"><b>早自习+早操双免卡</b><p>限量 5 张/班 · 需 880 XP</p></div>
+        <button class="g-btn gold" data-cost="880" data-name="双免卡">抢兑</button>
+      </div>
+      <div class="goods off">
+        <div class="g-ic">📝</div>
+        <div class="g-info"><b>平时作业免检券</b><p>已被兑完 · 下周补货</p></div>
+        <button class="g-btn" disabled>兑完</button>
+      </div>
+    </div>
+    <p class="shop-note" id="shopNote">💡 兑换后自动生成电子券码，老师端确认后生效 · 恶意囤券会被限购哦</p>
+  </div>
+
+  <div class="review">
+    <h4>📚 错题复盘 · 7 词待收</h4>
+    <p>第 1、2 关错过的词已自动收进来。艾宾浩斯提醒：现在复习记得最牢。</p>
+    <a class="go" href="index.html">去第 5 关收拾它们 →</a>
+  </div>
+</div>
+
+  <nav class="navbar">
+    <a href="index.html"><span>🗺️</span>闯关</a>
+    <a href="rank.html"><span>🏆</span>联赛</a>
+    <a href="team.html"><span>🐹</span>小队</a>
+    <a href="me.html" class="on"><span>😎</span>我的</a>
+  </nav>
+</div>
+
+<script>
+function load(){ try{ return JSON.parse(localStorage.getItem('cet46_demo')) || {xp:0,unlocked:1,stars:{}}; }catch(e){ return {xp:0,unlocked:1,stars:{}}; } }
+function save(s){ localStorage.setItem('cet46_demo', JSON.stringify(s)); }
+
+function refreshXp(){
+  const st = load();
+  document.getElementById('meXp').textContent = st.xp;
+  document.getElementById('shopXp').textContent = st.xp;
+}
+refreshXp();
+
+document.querySelectorAll('.g-btn[data-cost]').forEach(btn => {
+  btn.onclick = () => {
+    const cost = parseInt(btn.dataset.cost), name = btn.dataset.name;
+    const st = load();
+    if(st.xp < cost){
+      document.getElementById('shopNote').innerHTML =
+        `😅 积分不够（当前 <b style="color:#3ddc97">${st.xp}</b> / 需 ${cost}）——回地图再打两关 Boss 就有了`;
+      return;
+    }
+    st.xp -= cost;
+    save(st);
+    refreshXp();
+    btn.textContent = '已入背包 ✓';
+    btn.disabled = true;
+    btn.style.opacity = .6;
+    document.getElementById('shopNote').innerHTML =
+      `🎉 「${name}」兑换成功！电子券码已放入背包，老师确认后生效`;
+  };
+});
+</script>
+</body>
+</html>
