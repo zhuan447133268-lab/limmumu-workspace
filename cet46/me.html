@@ -125,7 +125,7 @@ body{
   <div class="ucard">
     <div class="avatar">🦉</div>
     <h2>王小鱼</h2>
-    <p>计科 2301 班 · 英语四级冲关中</p>
+    <p>计科 2301 班 · <span id="meTarget">英语四级冲关中</span></p>
     <div class="badges">
       <span class="bdg gold">🔥 连课 2 周</span>
       <span class="bdg green">🎯 全对王 ×1</span>
@@ -199,6 +199,7 @@ function refreshXp(){
   const st = load();
   document.getElementById('meXp').textContent = st.xp;
   document.getElementById('shopXp').textContent = st.xp;
+  document.getElementById('meTarget').textContent = st.target === '6' ? '英语六级冲关中' : '英语四级冲关中';
 }
 refreshXp();
 

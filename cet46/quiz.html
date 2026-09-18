@@ -294,7 +294,8 @@ body{
 
 <script>
 /* ================= 题库 ================= */
-const QBANK = {
+/* 四级题库 */
+const QBANK_4 = {
 1:{name:"第 1 关 · 高频词",icon:"🌱",type:"词汇",time:8,qs:[
   {t:"词汇",q:"We need to find ____ near the campus before the semester starts.",o:["accommodation","application","appointment","argument"],a:0,tip:"accommodation = 住宿，开学找房是校园高频场景",exp:"句意是「学期开始前，要在校园附近找住宿」。accommodation = 住宿；application 是「申请」，appointment 是「预约/约会」，argument 是「争论」，都搭不上「找地方住」的语境。"},
   {t:"词汇",q:"The professor asked us to ____ the data carefully before drawing any conclusions.",o:["analyze","apologize","announce","arrange"],a:0,tip:"analyze data = 分析数据，论文高频动词",exp:"后面 before drawing any conclusions（下任何结论之前）提示动作是「分析数据」：analyze the data。apologize 道歉、announce 宣布、arrange 安排，都不能接 data 表达这个意思。"},
@@ -341,6 +342,55 @@ const QBANK = {
   {t:"阅读",q:"真题风格：Passage — Some researchers argue that social media, despite connecting people online, may weaken face-to-face communication skills.\n\n研究者的态度是？",o:["社媒虽能联络人，但可能削弱面对面沟通能力","社媒彻底破坏了人际关系","社媒对线下一对一交流有好处","研究者反对使用一切社媒"],a:0,tip:"despite 让步转折，argue 表观点",exp:"argue 在这里是「认为」。despite 让步转折：尽管社媒能把人连到线上，但可能削弱面对面沟通能力。B、D 把 weaken（削弱）夸大成「彻底破坏」「反对一切」，C 则与 weaken 的意思完全相反。"}
 ]}
 };
+/* 六级题库：对齐真实六级考法（学术词汇、讲座听力、仔细阅读态度题） */
+const QBANK_6 = {
+1:{name:"第 1 关 · 六级高频词",icon:"🌱",type:"词汇",time:8,qs:[
+  {t:"词汇",q:"The ____ of the research findings has been questioned by several leading scholars.",o:["validity","variety","velocity","vividness"],a:0,tip:"validity = 有效性，学术写作高频",exp:"句意是「研究结论的有效性受到多位权威学者质疑」。validity = 有效性/正当性，学术高频词；variety 多样性、velocity 速度、vividness 生动性，都是 va-/ve-/vi- 形近干扰。"},
+  {t:"词汇",q:"The company decided to ____ its operations to emerging markets in Southeast Asia.",o:["expand","expend","export","expose"],a:0,tip:"expand operations = 扩展业务",exp:"expand = 扩大（规模），expand operations to... = 把业务扩展到东南亚新兴市场；expend 是「花费（金钱/精力）」，export 出口、expose 暴露——四个 ex- 前缀形近词，是六级词汇题的标配考法。"},
+  {t:"词汇",q:"There is a growing ____ among experts that climate policies need urgent revision.",o:["consensus","consciousness","consequence","convenience"],a:0,tip:"consensus = 共识",exp:"a growing consensus among experts = 专家之间日益增长的共识，新闻和学术写作高频句型；consciousness 意识、consequence 后果、convenience 便利，全是 con- 开头形近词。"},
+  {t:"词汇",q:"The novel's ____ structure makes it difficult to adapt into a film.",o:["intricate","intrinsic","intimate","intense"],a:0,tip:"intricate = 错综复杂的",exp:"「结构复杂所以难改编」：intricate = 错综复杂、精细难懂的；intrinsic 内在的、intimate 亲密的、intense 强烈的——in- 形容词四连辨析，六级经典题型。"},
+  {t:"词汇",q:"She remained ____ about the rumors and refused to make any comment.",o:["silent","silence","silently","silenced"],a:0,tip:"remain + 形容词作表语",exp:"remain 是系动词，后面接形容词作表语：remained silent 保持沉默。silence 是名词、silently 是副词、silenced 是过去分词（被噤声的），词性题是六级语法词汇化的常考套路。"}
+]},
+2:{name:"第 2 关 · 语法陷阱",icon:"⚡",type:"语法",time:8,qs:[
+  {t:"语法",q:"____ for the timely investment from the general public, our company would not be so thriving as it is.",o:["Had it not been","Were it not","Should it not be","If it had not"],a:0,tip:"省略 if 的虚拟倒装：Had it not been for = 要不是",exp:"虚拟语气省略 if 要倒装。Had it not been for = 要不是（与过去相反）；主句 would not be so thriving 是对现在的描述，属于混合型虚拟。Were it not for 是对现在的虚拟，时态对不上。"},
+  {t:"语法",q:"The professor demanded that the experiment ____ under strictly controlled conditions.",o:["be conducted","is conducted","conducted","was conducted"],a:0,tip:"demand 接虚拟 + 被动",exp:"demand 表「要求」接宾语从句用虚拟 (should) + 动词原形；且 experiment 和 conduct 是被动关系 → be conducted。两步都踩对才得分，是六级语法题的常见双重考点。"},
+  {t:"语法",q:"____, the email message is popular because it is quick and convenient.",o:["As a means of communication","As means of communication","As a mean of communication","As means of a communication"],a:0,tip:"means 单复数同形；a means of = 一种……方式",exp:"means（方式、手段）单复数同形，「一种交流方式」= a means of communication；mean 作名词是「平均值/中间」，不能表示「方式」。冠词和名词形式双重设坑。"},
+  {t:"语法",q:"Not only ____ the data, but he also analyzed it thoroughly.",o:["did he collect","he collected","had he collected","he had collected"],a:0,tip:"Not only 开头部分倒装；一般过去时即可",exp:"Not only 置于句首，分句部分倒装：did he collect。B、D 没倒装直接排除；C 用过去完成时缺少依据——收集和分析是顺承发生的两件事，不是「过去的过去」。"},
+  {t:"语法",q:"It is essential that every student ____ access to the online library.",o:["have","has","had","having"],a:0,tip:"It is essential that + (should) 动词原形",exp:"It is essential that... 从句用虚拟语气 (should) + 动词原形，should 省略后就是 have。has/had/having 都是陈述语气形式，迷惑性很强但规则唯一。"}
+]},
+3:{name:"第 3 关 · 阅读速攻",icon:"🎯",type:"阅读",time:9,qs:[
+  {t:"阅读",q:"Passage — A recent study found that employees who take regular breaks are not only more productive but also report higher job satisfaction than those who work continuously through the day.\n\n研究发现规律休息的员工怎么样？",o:["效率更高且满意度更高","比不休息的员工更容易疲劳","工作效率没有任何变化","普遍不喜欢自己的工作"],a:0,tip:"not only...but also 双优点",exp:"细节+比较结构。not only...but also 给出两个优点：more productive + higher job satisfaction = 效率更高且更满意。干扰项要么否定结论（无变化），要么无中生有（不喜欢工作）。"},
+  {t:"阅读",q:"Passage — While artificial intelligence has streamlined many routine tasks, critics argue that it may also erode certain cognitive skills that are developed through manual effort.\n\ncritics 的观点是？",o:["AI 可能削弱通过手动实践培养的认知技能","AI 不应该被用于日常工作","AI 会完全取代人类","AI 对认知能力只有好处"],a:0,tip:"while 让步 + argue 观点；erode = 侵蚀",exp:"while 让步转折后是重点：critics argue that it may also erode cognitive skills——may 表「可能」，erosion 对象是通过 manual effort 培养的技能。B 过度引申，C 把「可能削弱」夸大为「完全取代」，D 与 erode 相反。"},
+  {t:"阅读",q:"Passage — The committee's decision was met with widespread condemnation across the academic community.\n\ncondemnation 最接近的意思是？",o:["谴责","祝贺","讨论","怀疑"],a:0,tip:"态度词：condemnation = 谴责",exp:"词义猜测题。condemnation 来自 condemn（谴责），widespread condemnation =  widespread 声讨/谴责，是六级阅读高频态度词；不认识时可用构词法拆解或结合学术语境推断。"},
+  {t:"阅读",q:"Passage — The museum, which reopened last spring after three years of renovation, has attracted twice as many visitors as it did before the closure.\n\n博物馆何时重新开放？",o:["去年春天","三年前","闭馆前","文中没说"],a:0,tip:"reopened last spring；三年是翻修时长不是开放时间",exp:"细节定位题。reopened last spring = 去年春天重新开放；after three years of renovation 说的是「闭馆翻修了三年」，不是开放时间——「三年前」就是拿 renovation 时长做的偷换概念。"},
+  {t:"阅读",q:"Passage — Unlike his predecessors, the new director has made transparency the cornerstone of the organization's culture.\n\n这句话暗示新主管？",o:["把透明度作为组织文化的核心","延续了前任的管理方式","比前任更加保守","打算推翻组织文化"],a:0,tip:"Unlike = 与前任不同；cornerstone = 基石",exp:"Unlike his predecessors 先排除 B（与前任不同）；make A the cornerstone of B = 把 A 作为 B 的基石 → 透明度是组织文化的核心。C、D 都在原文没有依据。"}
+]},
+4:{name:"第 4 关 · 听力预热",icon:"🎧",type:"听力",time:9,qs:[
+  {t:"听力",s:"M: Have you registered for the seminar on artificial intelligence?\nW: I planned to, but it conflicts with my thesis defense rehearsal.",q:"🎧 听对话：\n\nM: Have you registered for the seminar on artificial intelligence?\nW: I planned to, but it conflicts with my thesis defense rehearsal.\n\n女士为什么可能参加不了研讨会？",o:["与论文答辩彩排冲突","她还没有注册","她对人工智能不感兴趣","研讨会已经取消"],a:0,tip:"but 转折后给原因：conflicts with",exp:"女士说 I planned to（本打算去）+ but 转折：与论文答辩彩排时间冲突。有计划说明有兴趣，排除「不感兴趣」；注册和取消都未被提及。"},
+  {t:"听力",s:"In today's lecture, we'll examine how urban gardens contribute to food security. Community gardens not only provide fresh produce but also strengthen neighborhood bonds.",q:"🎧 听短文（讲座开头）：\n\nIn today's lecture, we'll examine how urban gardens contribute to food security. Community gardens not only provide fresh produce but also strengthen neighborhood bonds.\n\n讲座的主题是什么？",o:["城市花园如何促进粮食安全","如何建立社区花园","城市粮食危机的根源","邻里关系的现状"],a:0,tip:"讲座首句定主题：how urban gardens contribute to food security",exp:"讲座/讲话听力首句必点题：we'll examine how urban gardens contribute to food security——「城市花园如何促进粮食安全」。后面 not only...but also 是补充细节，不是主题。"},
+  {t:"听力",s:"W: I'm considering switching my major from economics to environmental science.\nM: That's a big decision. Have you talked to your academic advisor about the credit transfer?",q:"🎧 听对话：\n\nW: I'm considering switching my major from economics to environmental science.\nM: That's a big decision. Have you talked to your academic advisor about the credit transfer?\n\n男士建议女士做什么？",o:["先和学业导师谈学分转换","坚持读经济学","立刻办理转专业","自己闷头决定"],a:0,tip:"反问句提建议：Have you talked to...",exp:"男士没有直接说建议，而是用 Have you talked to your academic advisor about the credit transfer? 反问——言下之意「先跟导师聊聊学分转换」。credit transfer（学分转换）正是转专业最实际的问题。"},
+  {t:"听力",s:"The research team found that students who reviewed material in spaced intervals retained significantly more after one month than those who crammed the night before. The findings were published in the Journal of Educational Psychology.",q:"🎧 听短文：\n\nThe research team found that students who reviewed material in spaced intervals retained significantly more after one month than those who crammed the night before. The findings were published in the Journal of Educational Psychology.\n\n研究的核心发现是什么？",o:["间隔复习的学生一个月后记得更多","考前突击效果更好","研究发表在教育心理学期刊","实验在一个月内完成"],a:0,tip:"spaced intervals > crammed 是本题题眼",exp:"比较结构：spaced intervals（间隔复习）retained significantly more after one month than crammed（考前突击）= 间隔复习记得更多。B 与结论相反；C 是出处细节不是发现；D 把「一个月后测试」偷换成「一个月内完成」。"},
+  {t:"听力",s:"M: The library's extended hours during exam week are a lifesaver.\nW: Definitely. I was there until midnight yesterday finishing my literature review.",q:"🎧 听对话：\n\nM: The library's extended hours during exam week are a lifesaver.\nW: Definitely. I was there until midnight yesterday finishing my literature review.\n\n两位说话者在谈论什么？",o:["考试周图书馆延长开放的好处","昨晚的文献综述内容","图书馆的新规定","考试周的复习压力"],a:0,tip:"a lifesaver + Definitely 表赞同",exp:"男士说延长开放是 a lifesaver（救命稻草），女士用 Definitely 强烈附和并举例（待到午夜写文献综述）——话题是「延长开放的好处」。B 是例子细节，C、D 未提及。"}
+]},
+5:{name:"第 5 关 · 词汇复盘",icon:"📚",type:"复盘",time:8,qs:[
+  {t:"复盘",q:"复习关来了——这些是你前面关卡最容易错的词：\n\na growing ____ among experts（共识）",o:["consensus","conscience","convenience","consequence"],a:0,tip:"consensus = 共识",exp:"复盘第 1 关：consensus = 共识。conscience 良心、convenience 便利、consequence 后果，都是 con- 形近词。"},
+  {t:"复盘",q:"The novel's ____ structure（错综复杂的）",o:["intricate","intrinsic","intense","internal"],a:0,tip:"intricate = 错综复杂的",exp:"复盘第 1 关：intricate = 错综复杂；intrinsic 内在的、intense 强烈的、internal 内部的，in- 家族辨析。"},
+  {t:"复盘",q:"____ for the timely investment, our company would not be so thriving.（要不是）",o:["Had it not been","If it was not","Were it not been","Should it not been"],a:0,tip:"省略 if 的虚拟倒装",exp:"复盘第 2 关：Had it not been for = 要不是（过去）。Were it not for 才是对现在的虚拟，且后面不加 been。"},
+  {t:"复盘",q:"____ more productive but also higher job satisfaction（不仅……而且）",o:["not only","not just","rather than","other than"],a:0,tip:"not only...but also 固定搭配",exp:"复盘第 3 关：not only...but also = 不仅……而且。rather than 是「而不是」，other than 是「除了」，都接不上 but also。"},
+  {t:"复盘",q:"students who reviewed material in spaced ____（间隔）",o:["intervals","internal","inventions","interviews"],a:0,tip:"spaced intervals = 间隔复习",exp:"复盘第 4 关：spaced intervals = 间隔（时间段）；internal 内部的、invention 发明、interview 面试，都是 inter-/in- 形近干扰。"}
+]},
+6:{name:"单元 Boss · 六级真题混合卷",icon:"👑",type:"真题",time:12,boss:true,qs:[
+  {t:"词汇",q:"真题风格：The government is committed to ____ carbon emissions by 30% before 2030.",o:["curbing","curing","cursing","curling"],a:0,tip:"curb emissions = 控制排放，环保高频",exp:"curb = 遏制/控制，curb carbon emissions = 控制碳排放，环保议题六级高频动词；cure 治愈、curse 诅咒、curl 卷曲——cur- 四兄弟形近词辨析。"},
+  {t:"语法",q:"真题风格：Only when the data is carefully verified ____ draw a reliable conclusion.",o:["can we","we can","we do","did we"],a:0,tip:"Only + 状语从句开头，主句倒装",exp:"Only when 引导的状语从句置于句首，主句部分倒装：can we draw。we can 未倒装；we do / did we 助动词和时态都不对。"},
+  {t:"阅读",q:"真题风格：Passage — Economists have long debated whether minimum wage laws ultimately benefit the workers they are designed to protect. Recent evidence suggests the effects vary considerably by region.\n\n经济学家对最低工资法的看法是？",o:["长期存在争论，且效果因地区而异","一致认为对工人有利","主流观点认为应当废除","证明对所有工人都有害"],a:0,tip:"long debated = 有争论；vary by region = 因地区而异",exp:"首句 have long debated = 长期争论（排除「一致认为」）；尾句 the effects vary considerably by region = 效果因地区而异。C、D 都是过于绝对的干扰项。"},
+  {t:"翻译",q:"中译英选择：\"随着人工智能技术的迅速发展，许多传统行业正在经历深刻的变革。\"",o:["With the rapid development of AI technology, many traditional industries are undergoing profound changes.","With the rapid develop of AI technology, many traditional industries are experiencing deep reform.","As AI technology develops rapid, many traditional trades are undergoing profoundly changes.","Along with AI technique quick development, many classic industries are suffering deep changes."],a:0,tip:"development 名词 + undergo profound changes 固定搭配",exp:"三个得分点：① rapid 后面接名词 development（不是 develop）；② 「经历深刻变革」固定搭配 undergo profound changes；③ 修饰动词要用副词 rapidly（不是 rapid）。三个干扰项各踩一个中式直译坑。"},
+  {t:"听力",s:"M: Congratulations on winning the research grant! How will you use the funding?\nW: Thanks! It will cover most of my conference travel and lab equipment.",q:"🎧 真题风格：\n\nM: Congratulations on winning the research grant! How will you use the funding?\nW: Thanks! It will cover most of my conference travel and lab equipment.\n\n这笔经费将用于什么？",o:["会议差旅和实验设备","偿还个人贷款","支付学费","存起来以后再用"],a:0,tip:"cover = 足以支付；conference travel + lab equipment",exp:"cover = （钱）足以支付。cover most of my conference travel and lab equipment = 主要用于会议差旅和实验设备，两个信息点对应正确项；其余用途均未提及。"},
+  {t:"词汇",q:"真题风格：The findings were ____ published in a peer-reviewed journal.",o:["subsequently","substantially","successively","suspiciously"],a:0,tip:"subsequently = 随后",exp:"subsequently = 随后、之后，「随后发表在同行评审期刊上」；substantially 实质上/大幅地、successively 连续地、suspiciously 可疑地——su- 副词四连辨析。"},
+  {t:"语法",q:"真题风格：By the time the guests arrived, the meeting ____ for an hour.",o:["had been underway","has been underway","was underway","is underway"],a:0,tip:"By the time + 过去时 → 过去完成时",exp:"By the time 引导过去时的从句，主句用过去完成时 had been underway（已经持续一小时）。underway 是形容词「进行中」，for an hour 表持续，has/is/was 都配不上这个时间结构。"},
+  {t:"阅读",q:"真题风格：Passage — The author acknowledges that electric vehicles are not without flaws, yet insists they represent a decisive step toward sustainable transportation.\n\n作者对电动车的态度是？",o:["承认有缺陷，但认定是迈向可持续交通的决定性一步","认为电动车完美无缺","对电动车持彻底否定态度","认为电动车不如传统燃油车"],a:0,tip:"acknowledges...yet insists：先抑后扬",exp:"acknowledges not without flaws = 承认有缺陷（双重否定，排除「完美无缺」）；yet insists 转折后表态：a decisive step toward sustainable transportation = 决定性一步。C、D 都与 yet 后的肯定态度相反。"}
+]}
+};
+const QBANKS = {4: QBANK_4, 6: QBANK_6};
 
 /* ================= 进度存档 ================= */
 function load(){ try{ return JSON.parse(localStorage.getItem('cet46_demo')) || {xp:0,unlocked:1,stars:{}}; }catch(e){ return {xp:0,unlocked:1,stars:{}}; } }
@@ -349,11 +399,18 @@ function save(s){ localStorage.setItem('cet46_demo', JSON.stringify(s)); }
 /* ================= 引擎 ================= */
 const params = new URLSearchParams(location.search);
 const lvId = parseInt(params.get('level') || '1');
+/* 备考目标：四级/六级各一套题库（首页选择，存档 target 字段） */
+const TARGET = (load().target === '6') ? '6' : '4';
+const QBANK = QBANKS[TARGET];
 const LV = QBANK[lvId] || QBANK[1];
 const QS = LV.qs;
 
-/* ================= 听力音频 ================= */
-const AU_MAP = {'4_0':'audio/l4q1.mp3','4_1':'audio/l4q2.mp3','4_2':'audio/l4q3.mp3','4_3':'audio/l4q4.mp3','4_4':'audio/l4q5.mp3','6_4':'audio/l6q5.mp3'};
+/* ================= 听力音频（按备考目标分套） ================= */
+const AU_MAPS = {
+  4: {'4_0':'audio/l4q1.mp3','4_1':'audio/l4q2.mp3','4_2':'audio/l4q3.mp3','4_3':'audio/l4q4.mp3','4_4':'audio/l4q5.mp3','6_4':'audio/l6q5.mp3'},
+  6: {'4_0':'audio/x6l4q1.mp3','4_1':'audio/x6l4q2.mp3','4_2':'audio/x6l4q3.mp3','4_3':'audio/x6l4q4.mp3','4_4':'audio/x6l4q5.mp3','6_4':'audio/x6l6q5.mp3'}
+};
+const AU_MAP = AU_MAPS[TARGET];
 const auEl = document.getElementById('auEl');
 const playBtn = document.getElementById('playBtn');
 const playHint = document.getElementById('playHint');
@@ -374,7 +431,7 @@ let bestCombo = 0, curAns = 0;
 let results = [];          /* 逐题记录：{t:题型, ok:对错, tip:考点} */
 let xpFromQuiz = 0;        /* 纯答题获得的 XP（用于明细） */
 
-document.getElementById('lvName').textContent = LV.name;
+document.getElementById('lvName').textContent = (TARGET === '6' ? '六级 · ' : '四级 · ') + LV.name;
 document.getElementById('lvSub').textContent = (LV.boss ? "混合真题 · 限时挑战 · 按得分换 XP" : LV.type + " · 共 " + QS.length + " 题 · 约 " + Math.max(4,QS.length+2) + " 分钟");
 document.getElementById('qTotal').textContent = QS.length;
 if(LV.boss) document.getElementById('qType').classList.add('boss');
