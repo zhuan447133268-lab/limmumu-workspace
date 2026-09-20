@@ -252,8 +252,9 @@ const LEVELS = [
   {id:2, icon:"⚡", name:"语法陷阱",      desc:"5 题 · 倒装+虚拟语气"},
   {id:3, icon:"🎯", name:"阅读速攻",      desc:"5 题 · 短篇阅读限时"},
   {id:4, icon:"📖", name:"阅读进阶",      desc:"5 题 · 推理+词义+态度"},
-  {id:5, icon:"📚", name:"词汇复盘",      desc:"5 题 · 错题重练，越错越考"},
-  {id:6, icon:"👑", name:"单元 Boss · 真题混合卷", desc:"8 题 · 710 分制 · 按得分换积分", boss:true},
+  {id:5, icon:"🎧", name:"听力预热",      desc:"5 题 · 双音色音频 · 可重复播放"},
+  {id:6, icon:"📚", name:"词汇复盘",      desc:"5 题 · 错题重练，越错越考"},
+  {id:7, icon:"👑", name:"单元 Boss · 真题混合卷", desc:"9 题 · 710 分制 · 按得分换积分", boss:true},
 ];
 
 function load(){ try{ return JSON.parse(localStorage.getItem('cet46_demo')) || {xp:0,unlocked:1,stars:{}}; }catch(e){ return {xp:0,unlocked:1,stars:{}}; } }
@@ -270,7 +271,7 @@ function render(){
 
   /* 毕业横幅 */
   const banner = document.getElementById('banner');
-  if(st.unlocked >= 7){
+  if(st.unlocked >= 8){
     banner.innerHTML = `<div class="clear-banner"><b>🎓 本单元已通关！</b><p>Boss 成绩单和积分已入账，去「我的」兑换福利吧</p></div>`;
   } else banner.innerHTML = '';
 
@@ -295,7 +296,7 @@ function render(){
     node.innerHTML = `
       <div class="dot">${done ? lv.icon : (isUnlocked ? lv.icon : '🔒')}</div>
       <div class="card">
-        <h4>${lv.id <= 5 ? '第 ' + lv.id + ' 关 · ' : ''}${lv.name.replace(/^(第 \d 关 · )/,'')}</h4>
+        <h4>${lv.id <= 6 ? '第 ' + lv.id + ' 关 · ' : ''}${lv.name.replace(/^(第 \d 关 · )/,'')}</h4>
         <p>${stateTxt}</p>
         ${starStr}${btn}
       </div>`;
